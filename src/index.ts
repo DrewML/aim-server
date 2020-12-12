@@ -1,41 +1,8 @@
 import net from 'net';
 import assert from 'assert';
-
-interface Flap {
-    channel: number;
-    sequence: number;
-    byteLength: number;
-    data: Buffer;
-}
-
-/**
- * @see https://en.wikipedia.org/wiki/OSCAR_protocol#FLAP_header
- */
-function parseFlap(msg: Buffer): Flap {
-    const id = msg.readUInt8(0);
-    assert(id === 0x2a, 'Unexpected Flap ID');
-
-    return {
-        channel: msg.readUInt8(1),
-        sequence: msg.readUInt16BE(2),
-        byteLength: msg.readUInt16BE(4),
-        data: Buffer.from(msg, 6),
-    };
-}
-
-/**
- * @see http://web.archive.org/web/20080308233204/http://dev.aol.com/aim/oscar/#FLAP__SIGNON_FRAME
- */
-function signonFlap() {
-    const buf = Buffer.alloc(7);
-    buf.writeUInt8(0x2a, 0); // start byte
-    buf.writeUInt8(0x1, 1); // flap channel
-    buf.writeUInt16BE(0x1, 2); // sequence number
-    buf.writeUInt16BE(0x1, 4); // data size (flap version)
-    buf.writeUInt8(0x1, 6); // flap version
-
-    return buf;
-}
+import { Flap } from './types';
+import { signonFlap } from './serverFlaps';
+import { parseFlap } from './parsers';
 
 const server = net.createServer((c) => {
     console.log('New socket opened');
@@ -50,36 +17,27 @@ const server = net.createServer((c) => {
         console.log('socket closed');
     });
 
-    function onChannel2Message(flap: Flap) {
-        console.log('Channel 2 Flap: ', flap);
-    }
+    /**
+     * @see http://web.archive.org/web/20080308233204/http://dev.aol.com/aim/oscar/#FLAP__FRAME_TYPE
+     */
+    const handlers: ChannelHandlers = {
+        1: onChannel1Message,
+        2: onChannel2Message,
+        3: onChannel3Message,
+        4: onChannel4Message,
+        5: onChannel5Message,
+    };
 
     c.on('data', (buf) => {
         const flap = parseFlap(buf);
-        // http://web.archive.org/web/20080308233204/http://dev.aol.com/aim/oscar/#FLAP__FRAME_TYPE
-        switch (flap.channel) {
-            case 1:
-                // SIGNON frame response
-                // TODO: assert flap version is always 1
-                break;
-            case 2:
-                onChannel2Message(flap);
-                break;
-            case 3:
-                // FLAP-level error
-                // TODO: Error logging
-                break;
-            case 4:
-                // Signoff negotiation
-                // TODO: Implement when sessions are implemented
-                break;
-            case 5:
-                // Keep-alive heartbeat
-                // TODO: Implement when sessions are implemented
-                break;
-            default:
-                throw new Error(`Unrecognized FLAP channel "${flap.channel}"`);
+        const handler = handlers[flap.channel];
+
+        if (!handler) {
+            console.warn(`Unrecognized FLAP channel "${flap.channel}"`, flap);
+            return;
         }
+
+        handler(flap);
     });
 
     // Send OSCAR connection handshake
@@ -95,3 +53,31 @@ server.on('error', (err) => {
 server.listen(5190, () => {
     console.log('Oscar Auth Server listening on 5190');
 });
+
+/**
+ * @see http://web.archive.org/web/20080308233204/http://dev.aol.com/aim/oscar/#FLAP__FRAME_TYPE
+ */
+interface ChannelHandlers {
+    [key: number]: (flap: Flap) => void;
+}
+
+function onChannel1Message(flap: Flap) {
+    const flapVersion = flap.data.readUInt32BE(0);
+    assert(flapVersion === 0x1, 'Incorrect client FLAP version');
+}
+
+function onChannel2Message(flap: Flap) {
+    console.log('Channel 2 Flap: ', flap);
+}
+
+function onChannel3Message(flap: Flap) {
+    console.log('Channel 3 Flap: ', flap);
+}
+
+function onChannel4Message(flap: Flap) {
+    console.log('Channel 4 Flap: ', flap);
+}
+
+function onChannel5Message(flap: Flap) {
+    console.log('Channel 5 Flap: ', flap);
+}
