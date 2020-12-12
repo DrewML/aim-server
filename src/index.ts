@@ -2,7 +2,8 @@ import net from 'net';
 import assert from 'assert';
 import { Flap } from './types';
 import { signonFlap } from './serverFlaps';
-import { parseFlap } from './parsers';
+import { authKeyResponseSnac } from './serverSnacs';
+import { parseFlap, parseSnac, parseAuthRequest } from './parsers';
 
 const server = net.createServer((c) => {
     console.log('New socket opened');
@@ -68,6 +69,11 @@ function onChannel1Message(flap: Flap) {
 
 function onChannel2Message(flap: Flap) {
     console.log('Channel 2 Flap: ', flap);
+    const snac = parseSnac(flap.data);
+    if (snac.family === 0x17 && snac.subtype === 0x6) {
+        const authReq = parseAuthRequest(snac.data);
+        // TODO: Auth key response
+    }
 }
 
 function onChannel3Message(flap: Flap) {
