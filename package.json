@@ -1,0 +1,20 @@
+{
+  "name": "aim-server",
+  "private": true,
+  "version": "0.0.1",
+  "description": "An AOL Instant Messenger Server. Implements a subset of the Oscar Protocol",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "format:check": "prettier --list-different '**/*.{js,ts,md,json}'",
+    "format": "prettier --write '**/*.{js,ts,md,json}'"
+  },
+  "author": "Andrew Levine",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^14.14.11",
+    "prettier": "^2.2.1",
+    "typescript": "^4.1.2"
+  }
+}
