@@ -28,6 +28,13 @@ export class MultiMap<K, V> {
     }
 
     /**
+     * @summary Get the first item added for a given key
+     */
+    first(key: K) {
+        return this.get(key)[0];
+    }
+
+    /**
      * @summary Set a new value for a key.
      */
     set(key: K, value: V) {

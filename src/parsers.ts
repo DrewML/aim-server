@@ -38,40 +38,44 @@ export function parseSnac(rawSnac: Buffer): Snac {
 /**
  * @see http://iserverd1.khstu.ru/oscar/snac_17_06.html
  */
-export function parseAuthRequest(buf: Buffer) {
-    const tlvs = parseTLVs(buf);
-    const [screennameTLV] = tlvs.get(TLVS.SCREENNAME);
-    assert(
-        screennameTLV && screennameTLV.value,
-        'Screen-name TLV missing in parseAuthRequest',
-    );
+export function parseAuthRequest(data: Buffer) {
+    const tlvs = parseTLVs(data);
+    const screennameTLV = tlvs.first(TLVS.SCREENNAME);
 
     return {
         screenname: screennameTLV.value.toString('ascii'),
     };
 }
 
-export function parseMD5LoginRequest(buf: Buffer) {
-    // TODO: Parse TLVs and return structured data
+/**
+ * @see http://iserverd1.khstu.ru/oscar/snac_17_02.html
+ */
+export function parseMD5LoginRequest(data: Buffer) {
+    const tlvs = parseTLVs(data);
+    const screenname = tlvs.first(TLVS.SCREENNAME);
+    const passwordHash = tlvs.first(TLVS.PASSWORD_HASH);
+    const clientID = tlvs.first(TLVS.CLIENT_ID_STRING);
+
+    return { screenname, passwordHash, clientID };
 }
 
 /**
  * @see http://iserverd1.khstu.ru/oscar/basic.html#b0003
  */
-export function parseTLVs(buf: Buffer) {
+export function parseTLVs(data: Buffer) {
     const tlvs = new MultiMap<number, TLV>();
 
-    for (let tlvStart = 0; tlvStart < buf.byteLength; ) {
-        const type = buf.readUInt16BE(tlvStart);
+    for (let tlvStart = 0; tlvStart < data.byteLength; ) {
+        const type = data.readUInt16BE(tlvStart);
 
         const lengthStart = tlvStart + 2;
-        const length = buf.readUInt16BE(lengthStart);
+        const length = data.readUInt16BE(lengthStart);
 
         const valueStart = lengthStart + 2;
         // A TLV's value can be 0 bytes. Odd that they're
         // not just excluded from the request, but ¯\_(ツ)_/¯
         const value = length
-            ? buf.subarray(valueStart, valueStart + length)
+            ? data.subarray(valueStart, valueStart + length)
             : // Empty buffer so we don't have to explicitly handle
               // a null/undefined anywhere a TLV type propagates
               Buffer.alloc(0);
