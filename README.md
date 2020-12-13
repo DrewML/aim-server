@@ -4,8 +4,7 @@ This is a (very wip) server-side implementation of the [Oscar Protocol](https://
 
 ## Working
 
--   AIM Client can establish connection and server can send and receive the FLAP SIGNON frame
--   Can receive initial auth flap from client
+-   Login currently works up to the point of the auth client/server auth challenge
 
 ## Oscar Protocol Resources
 
