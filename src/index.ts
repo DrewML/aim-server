@@ -1,20 +1,25 @@
-import net from 'net';
+import net, { Socket } from 'net';
 import assert from 'assert';
 import { Flap } from './types';
-import { signonFlap } from './serverFlaps';
+import { buildFlap } from './serverFlaps';
 import { authKeyResponseSnac } from './serverSnacs';
-import { parseFlap, parseSnac, parseAuthRequest } from './parsers';
+import {
+    parseFlap,
+    parseSnac,
+    parseAuthRequest,
+    parseMD5LoginRequest,
+} from './parsers';
 
-const server = net.createServer((c) => {
+const server = net.createServer((socket) => {
     console.log('New socket opened');
 
-    c.on('end', () => {
+    socket.on('end', () => {
         console.log('client disconnected');
     });
 
-    c.on('connect', () => console.log('Socket connected'));
-    c.on('error', (e) => console.log('Socket error', e));
-    c.on('close', () => {
+    socket.on('connect', () => console.log('Socket connected'));
+    socket.on('error', (e) => console.log('Socket error', e));
+    socket.on('close', () => {
         console.log('socket closed');
     });
 
@@ -29,7 +34,7 @@ const server = net.createServer((c) => {
         5: onChannel5Message,
     };
 
-    c.on('data', (buf) => {
+    socket.on('data', (buf) => {
         const flap = parseFlap(buf);
         const handler = handlers[flap.channel];
 
@@ -38,11 +43,19 @@ const server = net.createServer((c) => {
             return;
         }
 
-        handler(flap);
+        handler(flap, socket);
     });
 
-    // Send OSCAR connection handshake
-    c.write(signonFlap());
+    /**
+     * @see http://web.archive.org/web/20080308233204/http://dev.aol.com/aim/oscar/#FLAP__SIGNON_FRAME
+     */
+    socket.write(
+        buildFlap({
+            channel: 1,
+            sequence: 1,
+            data: Buffer.from([0x1]), // Flap version 1
+        }),
+    );
 });
 
 server.on('error', (err) => {
@@ -59,7 +72,7 @@ server.listen(5190, () => {
  * @see http://web.archive.org/web/20080308233204/http://dev.aol.com/aim/oscar/#FLAP__FRAME_TYPE
  */
 interface ChannelHandlers {
-    [key: number]: (flap: Flap) => void;
+    [key: number]: (flap: Flap, socket: Socket) => void;
 }
 
 function onChannel1Message(flap: Flap) {
@@ -67,12 +80,30 @@ function onChannel1Message(flap: Flap) {
     assert(flapVersion === 0x1, 'Incorrect client FLAP version');
 }
 
-function onChannel2Message(flap: Flap) {
+function onChannel2Message(flap: Flap, socket: Socket) {
     console.log('Channel 2 Flap: ', flap);
     const snac = parseSnac(flap.data);
+
     if (snac.family === 0x17 && snac.subtype === 0x6) {
         const authReq = parseAuthRequest(snac.data);
-        // TODO: Auth key response
+        console.log(authReq.screenname);
+        // Can be _any_ server generated string with len < size of u32 int
+        const authKey = Math.round(Math.random() * 1000).toString();
+        const responseSnac = authKeyResponseSnac(authKey, snac.requestID);
+        const responseFlap = buildFlap({
+            channel: 2,
+            sequence: 2,
+            data: responseSnac,
+        });
+
+        socket.write(responseFlap);
+        return;
+    }
+
+    if (snac.family === 0x17 && snac.subtype === 0x2) {
+        const payload = parseMD5LoginRequest(snac.data);
+        // TODO: Validate credentials, then send SNAC 17 03
+        // http://iserverd1.khstu.ru/oscar/snac_17_03.html
     }
 }
 
