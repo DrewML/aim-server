@@ -1,4 +1,23 @@
 import assert from 'assert';
+import { Snac } from './types';
+import { SNACS } from './constants';
+
+/**
+ * @summary Determines whether a Snac is a specific
+ *          family and subtype
+ */
+export function matchSnac<
+    TFamily extends keyof typeof SNACS,
+    TSubtype extends keyof typeof SNACS[TFamily]['subtypes']
+>(snac: Snac, family: TFamily, subtype: TSubtype) {
+    const snacDef = SNACS[family];
+
+    return (
+        snac.family === snacDef.family &&
+        // @ts-ignore TODO: Look into this (lol)
+        snac.subtype === snacDef.subtypes[subtype]
+    );
+}
 
 interface BuildSnacOpts {
     family: number;

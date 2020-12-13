@@ -1,5 +1,7 @@
 import assert from 'assert';
-import { Flap, Snac } from './types';
+import { TLVS } from './constants';
+import { MultiMap } from './MultiMap';
+import { Flap, Snac, TLV } from './types';
 
 /**
  * @see https://en.wikipedia.org/wiki/OSCAR_protocol#FLAP_header
@@ -38,7 +40,7 @@ export function parseSnac(rawSnac: Buffer): Snac {
  */
 export function parseAuthRequest(buf: Buffer) {
     const tlvs = parseTLVs(buf);
-    const screennameTLV = tlvs.find((t) => t.type === 0x1);
+    const [screennameTLV] = tlvs.get(TLVS.SCREENNAME);
     assert(
         screennameTLV && screennameTLV.value,
         'Screen-name TLV missing in parseAuthRequest',
@@ -55,13 +57,9 @@ export function parseMD5LoginRequest(buf: Buffer) {
 
 /**
  * @see http://iserverd1.khstu.ru/oscar/basic.html#b0003
- * @todo This should return a dict/map keyed by type, because
- *       the O(n) lookups everywhere suck. Downside is that > 1
- *       of the same TLV type can be in a SNAC, so we need a
- *       a dict/map impl that will handle that
  */
 export function parseTLVs(buf: Buffer) {
-    const tlvs = [];
+    const tlvs = new MultiMap<number, TLV>();
 
     for (let tlvStart = 0; tlvStart < buf.byteLength; ) {
         const type = buf.readUInt16BE(tlvStart);
@@ -74,9 +72,11 @@ export function parseTLVs(buf: Buffer) {
         // not just excluded from the request, but ¯\_(ツ)_/¯
         const value = length
             ? buf.subarray(valueStart, valueStart + length)
-            : null;
+            : // Empty buffer so we don't have to explicitly handle
+              // a null/undefined anywhere a TLV type propagates
+              Buffer.alloc(0);
 
-        tlvs.push({ type, length, value });
+        tlvs.set(type, { type, length, value });
 
         tlvStart = valueStart + length;
     }

@@ -18,3 +18,9 @@ export interface Snac {
     requestID: number;
     data: Buffer;
 }
+
+export interface TLV {
+    type: number;
+    length: number;
+    value: Buffer;
+}

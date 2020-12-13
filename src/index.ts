@@ -2,7 +2,7 @@ import net, { Socket } from 'net';
 import assert from 'assert';
 import { Flap } from './types';
 import { buildFlap } from './serverFlaps';
-import { authKeyResponseSnac } from './serverSnacs';
+import { matchSnac, authKeyResponseSnac } from './serverSnacs';
 import {
     parseFlap,
     parseSnac,
@@ -84,26 +84,25 @@ function onChannel2Message(flap: Flap, socket: Socket) {
     console.log('Channel 2 Flap: ', flap);
     const snac = parseSnac(flap.data);
 
-    if (snac.family === 0x17 && snac.subtype === 0x6) {
+    if (matchSnac(snac, 'AUTH', 'MD5_AUTH_REQUEST')) {
         const authReq = parseAuthRequest(snac.data);
-        console.log(authReq.screenname);
         // Can be _any_ server generated string with len < size of u32 int
         const authKey = Math.round(Math.random() * 1000).toString();
-        const responseSnac = authKeyResponseSnac(authKey, snac.requestID);
         const responseFlap = buildFlap({
             channel: 2,
             sequence: 2,
-            data: responseSnac,
+            data: authKeyResponseSnac(authKey, snac.requestID),
         });
 
         socket.write(responseFlap);
         return;
     }
 
-    if (snac.family === 0x17 && snac.subtype === 0x2) {
+    if (matchSnac(snac, 'AUTH', 'LOGIN_REQUEST')) {
         const payload = parseMD5LoginRequest(snac.data);
         // TODO: Validate credentials, then send SNAC 17 03
         // http://iserverd1.khstu.ru/oscar/snac_17_03.html
+        return;
     }
 }
 
