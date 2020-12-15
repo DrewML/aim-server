@@ -1,6 +1,5 @@
 /**
- * @summary Map-like data structure allowing multiple
- *          values per key
+ * @summary Map supporting multiple values per key
  */
 export class MultiMap<K, V> {
     private map: Map<K, V[]> = new Map<K, V[]>();

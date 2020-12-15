@@ -13,6 +13,9 @@ export function parseFlap(rawFlap: Buffer): Flap {
     // TODO: Implement custom util.inspect.custom logger
     // for better debugging
     return {
+        // [Symbol.for('nodejs.util.inspect.custom')]: () => {
+        //     this.
+        // },
         channel: rawFlap.readUInt8(1),
         sequence: rawFlap.readUInt16BE(2),
         byteLength: rawFlap.readUInt16BE(4),
@@ -65,24 +68,26 @@ export function parseMD5LoginRequest(data: Buffer) {
 export function parseTLVs(data: Buffer) {
     const tlvs = new MultiMap<number, TLV>();
 
-    for (let tlvStart = 0; tlvStart < data.byteLength; ) {
-        const type = data.readUInt16BE(tlvStart);
+    for (let cursor = 0; cursor < data.byteLength /* */; ) {
+        const type = data.readUInt16BE(cursor);
 
-        const lengthStart = tlvStart + 2;
+        const lengthStart = cursor + 2;
         const length = data.readUInt16BE(lengthStart);
 
         const valueStart = lengthStart + 2;
+        const valueEnd = valueStart + length;
         // A TLV's value can be 0 bytes. Odd that they're
         // not just excluded from the request, but ¯\_(ツ)_/¯
         const value = length
-            ? data.subarray(valueStart, valueStart + length)
+            ? data.subarray(valueStart, valueEnd)
             : // Empty buffer so we don't have to explicitly handle
               // a null/undefined anywhere a TLV type propagates
               Buffer.alloc(0);
 
         tlvs.set(type, { type, length, value });
 
-        tlvStart = valueStart + length;
+        cursor = valueEnd;
+        assert(cursor <= data.byteLength, 'Overflow that should never happen');
     }
 
     return tlvs;

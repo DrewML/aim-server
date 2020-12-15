@@ -5,6 +5,7 @@
   "description": "An AOL Instant Messenger Server. Implements a subset of the Oscar Protocol",
   "main": "index.js",
   "scripts": {
+    "start": "bin/aimserver",
     "build": "tsc",
     "watch": "tsc --watch",
     "format:check": "prettier --list-different '**/*.{js,ts,md,json}'",
