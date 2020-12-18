@@ -1,4 +1,5 @@
 import { assert } from 'console';
+import { Flap } from './types';
 
 interface BuildFlapOpts {
     channel: number;
@@ -16,4 +17,21 @@ export function buildFlap({ channel, sequence, data }: BuildFlapOpts) {
     buf.writeUInt16BE(data.byteLength, 4);
 
     return Buffer.concat([buf, data]);
+}
+
+/**
+ * @see https://en.wikipedia.org/wiki/OSCAR_protocol#FLAP_header
+ */
+export function parseFlap(rawFlap: Buffer): Flap {
+    const id = rawFlap.readUInt8(0);
+    assert(id === 0x2a, 'Unexpected Flap ID');
+
+    const flap: Flap = {
+        channel: rawFlap.readUInt8(1),
+        sequence: rawFlap.readUInt16BE(2),
+        byteLength: rawFlap.readUInt16BE(4),
+        data: rawFlap.subarray(6),
+    };
+
+    return flap;
 }

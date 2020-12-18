@@ -1,28 +1,30 @@
 import net, { Socket, Server } from 'net';
 import assert from 'assert';
 import { Flap } from './types';
-import { buildFlap } from './serverFlaps';
-import { matchSnac, authKeyResponseSnac } from './serverSnacs';
-import {
-    parseFlap,
-    parseSnac,
-    parseAuthRequest,
-    parseMD5LoginRequest,
-} from './parsers';
+import { buildFlap, parseFlap } from './flapUtils';
+import { matchSnac, parseSnac } from './snacUtils';
+import { authKeyResponseSnac } from './serverSentSnacs';
+import { parseAuthRequest, parseMD5LoginRequest } from './clientSnacs';
 
 interface AIMAuthServerOpts {
     port?: number;
     host?: string;
 }
 
-const defaults: AIMAuthServerOpts = {
-    port: 5190,
-};
-
+/**
+ * @summary The first server an Oscar Protocol client
+ *          connects to when signing on. Confirms client
+ *          credentials, and returns a cookie and address
+ *          to contact the next service (the BOSS server)
+ */
 export class AIMAuthServer {
     private server: Server;
+    private host: string;
+    private port: number;
 
-    constructor(private opts: AIMAuthServerOpts = defaults) {
+    constructor(opts: AIMAuthServerOpts = {}) {
+        this.host = opts.host ?? '0.0.0.0';
+        this.port = opts.port ?? 5190;
         this.server = net.createServer(this.onNewConnection.bind(this));
         this.server.on('error', this.onServerError.bind(this));
     }
@@ -48,7 +50,9 @@ export class AIMAuthServer {
         socket.write(
             buildFlap({
                 channel: 1,
-                sequence: 1, // TODO: Sequence should be generated in an abstraction around socket.write
+                // TODO: Sequence numbers should be generated in an abstraction around socket.write,
+                // to prevent out-of-order sequences, which is a fatal error for an OSCAR client
+                sequence: 1,
                 data: Buffer.from([0x1]), // Flap version 1
             }),
         );
@@ -64,6 +68,7 @@ export class AIMAuthServer {
     }
 
     private onChannel2(flap: Flap, socket: Socket) {
+        console.log('channel 2 flap', flap);
         const snac = parseSnac(flap.data);
 
         if (matchSnac(snac, 'AUTH', 'MD5_AUTH_REQUEST')) {
@@ -125,10 +130,16 @@ export class AIMAuthServer {
         handler.call(this, flap, socket);
     }
 
-    listen() {
-        const { port, host } = this.opts;
-        this.server.listen(port, host, () => {
-            console.log(`AIMAuthServer: Listening on ${port}`);
+    listen(): Promise<{ host: string; port: number }> {
+        return new Promise((res) => {
+            this.server.listen(this.port, this.host, () => {
+                const address = this.server.address();
+                assert(
+                    address && typeof address !== 'string',
+                    'Unexpected net.AddressInfo in AIMAuthServer.listen',
+                );
+                res({ host: address.address, port: address.port });
+            });
         });
     }
 }

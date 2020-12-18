@@ -19,6 +19,9 @@ export interface Snac {
     data: Buffer;
 }
 
+/**
+ * @see http://iserverd1.khstu.ru/oscar/basic.html#b0003
+ */
 export interface TLV {
     type: number;
     length: number;

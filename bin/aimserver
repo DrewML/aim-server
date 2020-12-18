@@ -1,3 +1,11 @@
 #!/usr/bin/env node
 
-require('../dist/cli').cli();
+const authHost = process.env.AUTH_HOST;
+const authPort = process.env.AUTH_PORT;
+
+require('../dist/cli')
+    .cli({ authHost, authPort })
+    .catch(err => {
+        console.error(err);
+        process.exit(1);
+    });
