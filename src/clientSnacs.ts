@@ -18,9 +18,9 @@ export function parseAuthRequest(data: Buffer) {
  */
 export function parseMD5LoginRequest(data: Buffer) {
     const tlvs = parseTLVs(data);
-    const screenname = tlvs.first(TLVS.SCREENNAME);
-    const passwordHash = tlvs.first(TLVS.PASSWORD_HASH);
-    const clientID = tlvs.first(TLVS.CLIENT_ID_STRING);
+    const screenname = tlvs.first(TLVS.SCREENNAME).value.toString('ascii');
+    const passwordHash = tlvs.first(TLVS.PASSWORD_HASH).value.toString('ascii');
+    const clientID = tlvs.first(TLVS.CLIENT_ID_STRING).value.toString('ascii');
 
     return { screenname, passwordHash, clientID };
 }

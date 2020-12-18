@@ -21,6 +21,10 @@ export class AIMAuthServer {
     private server: Server;
     private host: string;
     private port: number;
+    private socketState: WeakMap<
+        Socket,
+        InstanceType<typeof SocketState>
+    > = new WeakMap();
 
     constructor(opts: AIMAuthServerOpts = {}) {
         this.host = opts.host ?? '0.0.0.0';
@@ -31,6 +35,12 @@ export class AIMAuthServer {
 
     private onServerError(error: Error) {
         console.error('Server Error: ', error);
+    }
+
+    private getState(socket: Socket) {
+        const state = this.socketState.get(socket);
+        assert(state, 'Missing SocketState in AIMAuthServer');
+        return state;
     }
 
     /**
@@ -47,22 +57,22 @@ export class AIMAuthServer {
         socket.on('close', () => console.log('socket closed'));
         socket.on('data', (data) => this.onSocketData(data, socket));
 
+        // Initialize state needed for auth requests
+        const socketState = new SocketState();
+        this.socketState.set(socket, socketState);
+
         socket.write(
             buildFlap({
                 channel: 1,
                 // TODO: Sequence numbers should be generated in an abstraction around socket.write,
                 // to prevent out-of-order sequences, which is a fatal error for an OSCAR client
-                sequence: 1,
+                sequence: socketState.claimSequenceID(),
                 data: Buffer.from([0x1]), // Flap version 1
             }),
         );
-
-        // TODO: Setup state for the connection
-        // Need to track some things, including the
-        // salt/challenge for hashed passwords
     }
 
-    private onChannel1(flap: Flap, socket: Socket) {
+    private onChannel1(flap: Flap) {
         const flapVersion = flap.data.readUInt32BE(0);
         assert(flapVersion === 0x1, 'Incorrect client FLAP version');
     }
@@ -70,14 +80,17 @@ export class AIMAuthServer {
     private onChannel2(flap: Flap, socket: Socket) {
         console.log('channel 2 flap', flap);
         const snac = parseSnac(flap.data);
+        const state = this.getState(socket);
 
         if (matchSnac(snac, 'AUTH', 'MD5_AUTH_REQUEST')) {
             const authReq = parseAuthRequest(snac.data);
             // Can be _any_ server generated string with len < size of u32 int
-            const authKey = Math.round(Math.random() * 1000).toString();
+            const authKey = state.setSalt(
+                Math.round(Math.random() * 1000).toString(),
+            );
             const responseFlap = buildFlap({
                 channel: 2,
-                sequence: 2,
+                sequence: this.getState(socket).claimSequenceID(),
                 data: authKeyResponseSnac(authKey, snac.requestID),
             });
 
@@ -121,7 +134,7 @@ export class AIMAuthServer {
 
         if (!handler) {
             console.warn(
-                `AIMAuthServer: Unrecognized FLAP channel "${flap.channel}"`,
+                `AIMAuthServer: Unrecognized FLAP channel "${flap.channel}". FLAP will be skipped`,
                 flap,
             );
             return;
@@ -149,4 +162,21 @@ export class AIMAuthServer {
  */
 interface ChannelHandlers {
     [key: number]: (flap: Flap, socket: Socket) => void;
+}
+
+class SocketState {
+    private lastSequenceID: number = 0;
+    private salt: string | undefined;
+
+    claimSequenceID() {
+        return this.lastSequenceID++;
+    }
+
+    setSalt(salt: string) {
+        return (this.salt = salt);
+    }
+
+    getSalt() {
+        return this.salt;
+    }
 }
