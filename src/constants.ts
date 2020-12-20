@@ -29,6 +29,7 @@ export const TLVS = {
     CLIENT_LESSER: 0x19,
     CLIENT_BUILD: 0x1a,
     PASSWORD_HASH: 0x25,
+    LATEST_BETA_VERSION: 0x40,
     BETA_DIGEST_SIG: 0x48,
     RELEASE_DIGEST_SIG: 0x49,
     CHANGE_PASSWORD_URL: 0x54,
@@ -51,4 +52,8 @@ export const SNACS = {
             MD5_AUTH_RESPONSE: 0x7,
         },
     },
+};
+
+export const LOGIN_ERRORS = {
+    INCORRECT_NICK_OR_PASS: 0x4,
 };

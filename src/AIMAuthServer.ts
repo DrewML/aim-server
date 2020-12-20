@@ -5,8 +5,9 @@ import crypto from 'crypto';
 import { hashClientPassword } from './hashClientLogin';
 import { buildFlap, parseFlap } from './flapUtils';
 import { matchSnac, parseSnac } from './snacUtils';
-import { authKeyResponseSnac } from './serverSentSnacs';
+import { authKeyResponseSnac, loginErrorSnac } from './serverSentSnacs';
 import { parseAuthRequest, parseMD5LoginRequest } from './clientSnacs';
+import { LOGIN_ERRORS } from './constants';
 
 interface AIMAuthServerOpts {
     port?: number;
@@ -112,20 +113,27 @@ export class AIMAuthServer {
                 'Challenge issued for one screenname, but used by another',
             );
 
+            // TODO: Add persistence so we can have
+            // non-hardcoded accounts
             const hashToMatch = hashClientPassword({
                 password: 'password',
                 salt: state.getSalt(),
             });
-
+            const isValidUsername = true;
             const isValidPass = payload.passwordHash.equals(hashToMatch);
-            console.log(
-                `Password for screenname ${payload.screenname} is ${
-                    isValidPass ? '' : 'not'
-                } valid`,
-            );
 
-            // TODO: Send SNAC 17 03 for valid credentials
-            // http://iserverd1.khstu.ru/oscar/snac_17_03.html
+            const responseFlap = buildFlap({
+                channel: 2,
+                sequence: state.claimSequenceID(),
+                data: loginErrorSnac({
+                    screenname: payload.screenname,
+                    errorCode: LOGIN_ERRORS.INCORRECT_NICK_OR_PASS,
+                    errorURL: 'https://drewml.com',
+                    reqID: snac.requestID,
+                }),
+            });
+
+            socket.write(responseFlap);
             return;
         }
         console.log('Unhandled Channel 2 Flap: ', flap);
