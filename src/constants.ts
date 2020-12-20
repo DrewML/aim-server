@@ -32,6 +32,7 @@ export const TLVS = {
     BETA_DIGEST_SIG: 0x48,
     RELEASE_DIGEST_SIG: 0x49,
     CHANGE_PASSWORD_URL: 0x54,
+    USE_NEW_HASH_STRATEGY: 0x4c,
 };
 
 /**

@@ -4,6 +4,8 @@ import { MultiMap } from './MultiMap';
 
 /**
  * @see http://iserverd1.khstu.ru/oscar/basic.html#b0003
+ * @see https://en.wikipedia.org/wiki/Type-length-value
+ * @todo Just for fun, should make a lazy variant of this parser
  */
 export function parseTLVs(data: Buffer) {
     const tlvs = new MultiMap<number, TLV>();

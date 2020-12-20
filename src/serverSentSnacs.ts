@@ -9,9 +9,11 @@ import { buildSnac } from './snacUtils';
 export function authKeyResponseSnac(authKey: string, reqID: number) {
     assert(authKey.length < 0xffff, 'authKey size exceeds u32 int');
 
-    const authKeyBuf = Buffer.from(authKey, 'ascii');
-    const authKeyLen = Buffer.alloc(32);
-    authKeyLen.writeUInt32BE(authKeyBuf.byteLength, 0);
+    const authKeyBuf = Buffer.from(authKey, 'utf8');
+    // Note: The linked docs for this SNAC are wrong.
+    // The length should be a word (2 byte), not a dword (4 bytes)
+    const authKeyLen = Buffer.alloc(2);
+    authKeyLen.writeUInt16BE(authKeyBuf.byteLength, 0);
 
     return buildSnac({
         family: 0x17,

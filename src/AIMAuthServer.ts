@@ -1,6 +1,8 @@
 import net, { Socket, Server } from 'net';
 import assert from 'assert';
 import { Flap } from './types';
+import crypto from 'crypto';
+import { hashClientPassword } from './hashClientLogin';
 import { buildFlap, parseFlap } from './flapUtils';
 import { matchSnac, parseSnac } from './snacUtils';
 import { authKeyResponseSnac } from './serverSentSnacs';
@@ -53,8 +55,8 @@ export class AIMAuthServer {
 
         socket.once('connect', () => console.log('new socket connection'));
         socket.on('error', () => console.log('socket error'));
-        socket.on('end', () => console.log('socked closed'));
-        socket.on('close', () => console.log('socket closed'));
+        socket.on('end', () => console.log('socked connection ending'));
+        socket.on('close', () => console.log('socket connection closed'));
         socket.on('data', (data) => this.onSocketData(data, socket));
 
         // Initialize state needed for auth requests
@@ -78,7 +80,6 @@ export class AIMAuthServer {
     }
 
     private onChannel2(flap: Flap, socket: Socket) {
-        console.log('channel 2 flap', flap);
         const snac = parseSnac(flap.data);
         const state = this.getState(socket);
 
@@ -86,8 +87,10 @@ export class AIMAuthServer {
             const authReq = parseAuthRequest(snac.data);
             // Can be _any_ server generated string with len < size of u32 int
             const authKey = state.setSalt(
-                Math.round(Math.random() * 1000).toString(),
+                crypto.randomInt(100000000, 9999999999).toString(),
             );
+
+            state.setScreenname(authReq.screenname);
             const responseFlap = buildFlap({
                 channel: 2,
                 sequence: this.getState(socket).claimSequenceID(),
@@ -100,12 +103,31 @@ export class AIMAuthServer {
 
         if (matchSnac(snac, 'AUTH', 'LOGIN_REQUEST')) {
             const payload = parseMD5LoginRequest(snac.data);
-            console.log(payload);
-            // TODO: Validate credentials, then send SNAC 17 03
+            assert(
+                payload.newHashStrategy,
+                'Pre-5.2 authentication not yet supported',
+            );
+            assert(
+                payload.screenname === state.getScreenname(),
+                'Challenge issued for one screenname, but used by another',
+            );
+
+            const hashToMatch = hashClientPassword({
+                password: 'password',
+                salt: state.getSalt(),
+            });
+
+            const isValidPass = payload.passwordHash.equals(hashToMatch);
+            console.log(
+                `Password for screenname ${payload.screenname} is ${
+                    isValidPass ? '' : 'not'
+                } valid`,
+            );
+
+            // TODO: Send SNAC 17 03 for valid credentials
             // http://iserverd1.khstu.ru/oscar/snac_17_03.html
             return;
         }
-
         console.log('Unhandled Channel 2 Flap: ', flap);
     }
 
@@ -167,9 +189,19 @@ interface ChannelHandlers {
 class SocketState {
     private lastSequenceID: number = 0;
     private salt: string | undefined;
+    private screenname: string | undefined;
 
     claimSequenceID() {
         return this.lastSequenceID++;
+    }
+
+    setScreenname(screenname: string) {
+        return (this.screenname = screenname);
+    }
+
+    getScreenname() {
+        assert(this.screenname, 'Missing screenname');
+        return this.screenname;
     }
 
     setSalt(salt: string) {
@@ -177,6 +209,7 @@ class SocketState {
     }
 
     getSalt() {
+        assert(this.salt, 'Missing MD5 salt...somehow');
         return this.salt;
     }
 }
