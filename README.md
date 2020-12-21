@@ -4,7 +4,20 @@ This is a (very wip) server-side implementation of the [Oscar Protocol](https://
 
 ## Working
 
--   Login currently works up to the point of the auth client/server auth challenge
+-   Authentication Server
+    -   Only supports the newer authentication mechanism (TLV 0x4c) because I don't want to deal with plaintext passwords
+    -   Every username (no registration yet) can be used with the hardcoded password `password`
+
+## Running
+
+-   Set `AUTH_HOST` env var (defaults to `0.0.0.0`)
+-   Set `AUTH_PORT` env var (defaults to `5190`)
+-   Run `npm run build` to compile
+-   Run `npm start` (or `bin/aimserver`)
+
+## Oscar Clients
+
+This has only been tested with AIM for Windows version `5.2.3292`, but theoretically should work with more clients.
 
 ## Oscar Protocol Resources
 
