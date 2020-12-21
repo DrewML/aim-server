@@ -26,3 +26,4 @@ This has only been tested with AIM for Windows version `5.2.3292`, but theoretic
 -   https://wiki.nina.bz/wiki/Protocols/OSCAR (From the Nina group also working on an OSCAR server)
 -   https://github.com/bitm4ster/AOL-Instant-Messenger-Server/ (Oscar server written in VB6. and it actually compiles!)
 -   http://iserverd.khstu.ru/download/ (Oscar Server written in C++. Haven't attempted to compile yet, but a great reference)
+-   http://web.archive.org/web/20060113083940/http://joust.kano.net/wiki/oscar/moin.cgi/ (Unofficial protocol docs)
