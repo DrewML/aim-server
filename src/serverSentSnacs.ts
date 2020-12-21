@@ -47,6 +47,9 @@ export function loginErrorSnac(opts: {
     });
 }
 
+/**
+ * @see http://iserverd1.khstu.ru/oscar/snac_17_03.html
+ */
 export function loginSuccessSnac(opts: {
     screenname: string;
     email: string;
@@ -55,11 +58,12 @@ export function loginSuccessSnac(opts: {
     latestBetaVersion: string;
     latestBetaChecksum: string;
     passwordChangeURL: string;
+    reqID: number;
 }) {
     const screenname = stringTLV(TLVS.SCREENNAME, opts.screenname);
     const email = stringTLV(TLVS.EMAIL, opts.email);
     const bosAddress = stringTLV(TLVS.BOS_ADDRESS, opts.bosAddress);
-    // const authCookie = void; // apparently a byte array?
+    const authCookie = stringTLV(TLVS.AUTH_COOKIE, opts.authCookie);
     const betaVersion = stringTLV(
         TLVS.LATEST_BETA_VERSION,
         opts.latestBetaVersion,
@@ -72,4 +76,19 @@ export function loginSuccessSnac(opts: {
         TLVS.CHANGE_PASSWORD_URL,
         opts.passwordChangeURL,
     );
+
+    return buildSnac({
+        family: SNACS.AUTH.family,
+        subtype: SNACS.AUTH.subtypes.LOGIN_REPLY,
+        reqID: opts.reqID,
+        data: Buffer.concat([
+            screenname,
+            email,
+            bosAddress,
+            authCookie,
+            betaVersion,
+            betaChecksum,
+            changePasswordURL,
+        ]),
+    });
 }

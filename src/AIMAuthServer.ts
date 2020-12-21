@@ -5,7 +5,11 @@ import crypto from 'crypto';
 import { hashClientPassword } from './hashClientLogin';
 import { buildFlap, parseFlap } from './flapUtils';
 import { matchSnac, parseSnac } from './snacUtils';
-import { authKeyResponseSnac, loginErrorSnac } from './serverSentSnacs';
+import {
+    authKeyResponseSnac,
+    loginErrorSnac,
+    loginSuccessSnac,
+} from './serverSentSnacs';
 import { parseAuthRequest, parseMD5LoginRequest } from './clientSnacs';
 import { LOGIN_ERRORS } from './constants';
 
@@ -119,16 +123,40 @@ export class AIMAuthServer {
                 password: 'password',
                 salt: state.getSalt(),
             });
-            const isValidUsername = true;
+            const isValidUsername = true; // TODO: Real lookup
             const isValidPass = payload.passwordHash.equals(hashToMatch);
+
+            // TODO: handle various diff error types,
+            // rather than mapping all to INCORRECT_NICK_OR_PASS
+            if (!(isValidUsername && isValidPass)) {
+                const responseFlap = buildFlap({
+                    channel: 2,
+                    sequence: state.claimSequenceID(),
+                    data: loginErrorSnac({
+                        screenname: payload.screenname,
+                        errorCode: LOGIN_ERRORS.INCORRECT_NICK_OR_PASS,
+                        errorURL: 'https://drewml.com',
+                        reqID: snac.requestID,
+                    }),
+                });
+
+                socket.write(responseFlap);
+                return;
+            }
 
             const responseFlap = buildFlap({
                 channel: 2,
                 sequence: state.claimSequenceID(),
-                data: loginErrorSnac({
+                data: loginSuccessSnac({
                     screenname: payload.screenname,
-                    errorCode: LOGIN_ERRORS.INCORRECT_NICK_OR_PASS,
-                    errorURL: 'https://drewml.com',
+                    // TODO: Should be pulled from DB when real
+                    // persistence is added
+                    email: 'DrewML@users.noreply.github.com',
+                    bosAddress: 'host.test:5190',
+                    authCookie: '111111111',
+                    latestBetaVersion: '8.1.4',
+                    latestBetaChecksum: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+                    passwordChangeURL: 'https://drewml.com',
                     reqID: snac.requestID,
                 }),
             });
