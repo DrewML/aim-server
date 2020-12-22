@@ -27,7 +27,7 @@ export function parseFlap(rawFlap: Buffer): Flap {
     assert(id === 0x2a, 'Unexpected Flap ID');
 
     const flap: Flap = {
-        channel: rawFlap.readUInt8(1) as Flap['channel'],
+        channel: rawFlap.readUInt8(1),
         sequence: rawFlap.readUInt16BE(2),
         byteLength: rawFlap.readUInt16BE(4),
         data: rawFlap.subarray(6),
