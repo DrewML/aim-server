@@ -10,6 +10,7 @@ export async function cli(opts: CLIOpts) {
         host: opts.authHost,
         port: (opts.authPort && Number(opts.authPort)) || undefined,
     });
-    const { host, port } = await authServer.listen();
-    console.log(`Auth Service listening on ${host}:${port}`);
+
+    const { address, port } = await authServer.start();
+    console.log(`Auth Service listening on ${address}:${port}`);
 }
