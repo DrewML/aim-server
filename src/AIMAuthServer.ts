@@ -101,7 +101,7 @@ export class AIMAuthServer extends OscarServer {
                         // persistence is added
                         email: 'DrewML@users.noreply.github.com',
                         // Point to BOSS host/port
-                        bosAddress: 'host.test:5190',
+                        bosAddress: 'host.test:5191',
                         // TODO: Stop hardcoding BOSS cookie
                         authCookie: '111111111',
                         latestBetaVersion: '8.1.4',

@@ -2,9 +2,11 @@
 
 const authHost = process.env.AUTH_HOST;
 const authPort = process.env.AUTH_PORT;
+const bossHost = process.env.BOSS_HOST;
+const bossPort = process.env.BOSS_PORT;
 
 require('../dist/cli')
-    .cli({ authHost, authPort })
+    .cli({ authHost, authPort, bossHost, bossPort })
     .catch(err => {
         console.error(err);
         process.exit(1);

@@ -5,8 +5,8 @@ import { createServer, Socket, Server, AddressInfo } from 'net';
 import { MultiMap } from './MultiMap';
 
 interface OscarServerOpts {
-    port?: number;
-    host?: string;
+    port: number;
+    host: string;
 }
 
 export class OscarServer {
@@ -15,8 +15,8 @@ export class OscarServer {
     private port: number;
 
     constructor(opts: OscarServerOpts) {
-        this.host = opts.host ?? '0.0.0.0';
-        this.port = opts.port ?? 5190;
+        this.host = opts.host;
+        this.port = opts.port;
 
         this.server = createServer((socket) => {
             this.onConnection(new OscarSocket(socket));
@@ -92,6 +92,11 @@ export class OscarSocket {
 
     private onData(data: Buffer) {
         const flap = parseFlap(data);
+        assert(
+            this.channelListeners.has(flap.channel),
+            `Channel ${flap.channel} has no handler in OscarSocket}`,
+        );
+
         const listeners = this.channelListeners.get(flap.channel);
         for (const listener of listeners) {
             listener(flap);
