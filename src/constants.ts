@@ -44,6 +44,9 @@ export const SNACS = {
         family: 0x1,
         subtypes: {
             SUPPORTED_FAMILIES: 0x3,
+            CLIENT_FAMILY_VERSIONS: 0x17,
+            SERVER_FAMILY_VERSIONS: 0x18,
+            RATE_REQUEST: 0x6,
         },
     },
     LOCATION: {
