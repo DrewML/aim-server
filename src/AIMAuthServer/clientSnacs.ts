@@ -1,5 +1,5 @@
-import { parseTLVs } from './parseTLVs';
-import { TLVS } from './constants';
+import { parseTLVs } from '../parseTLVs';
+import { TLVS } from '../constants';
 
 /**
  * @see http://iserverd1.khstu.ru/oscar/snac_17_06.html

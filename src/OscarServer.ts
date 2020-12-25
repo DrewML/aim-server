@@ -56,6 +56,7 @@ export class OscarSocket {
 
     constructor(private socket: Socket) {
         socket.on('data', this.onData.bind(this));
+        socket.on('error', (e) => console.error(e));
     }
 
     get remoteAddress() {
@@ -68,12 +69,12 @@ export class OscarSocket {
     /**
      * @summary Send the FLAP version number (always 0x1).
      *          OSCAR clients will not start sending flaps
-     *          until the start FLAP is sent
+     *          until the start FLAP is sent from the server
      */
     sendStartFlap() {
         this.write({
             channel: 1,
-            data: Buffer.from([0x1]),
+            data: Buffer.from([0x0, 0x0, 0x0, 0x1]),
         });
     }
 

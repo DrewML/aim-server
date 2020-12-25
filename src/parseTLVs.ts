@@ -29,7 +29,7 @@ export function parseTLVs(data: Buffer) {
         tlvs.set(type, { type, length, value });
 
         cursor = valueEnd;
-        assert(cursor <= data.byteLength, 'Overflow that should never happen');
+        assert(cursor <= data.byteLength, 'parseTLVs: Malformed data');
     }
 
     return tlvs;

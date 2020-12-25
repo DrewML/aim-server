@@ -40,6 +40,45 @@ export const TLVS = {
  * @see http://iserverd1.khstu.ru/oscar/families.html
  */
 export const SNACS = {
+    GENERAL: {
+        family: 0x1,
+        subtypes: {
+            SUPPORTED_FAMILIES: 0x3,
+        },
+    },
+    LOCATION: {
+        family: 0x2,
+    },
+    BUDDYLIST: {
+        family: 0x3,
+    },
+    ICBM: {
+        family: 0x4,
+    },
+    INVITATION: {
+        family: 0x6,
+    },
+    ADMINISTRATIVE: {
+        family: 0x7,
+    },
+    POPUP_NOTICE: {
+        family: 0x8,
+    },
+    PRIVACY_MGMT: {
+        family: 0x9,
+    },
+    USER_LOOKUP: {
+        family: 0x0a,
+    },
+    USAGE_STATS: {
+        family: 0x0b,
+    },
+    SSI: {
+        family: 0x13,
+    },
+    OFFLINE: {
+        family: 0x15,
+    },
     AUTH: {
         family: 0x17,
         subtypes: {

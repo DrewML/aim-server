@@ -1,15 +1,15 @@
-import { OscarServer, OscarSocket } from './OscarServer';
+import { OscarServer, OscarSocket } from '../OscarServer';
 import assert from 'assert';
 import crypto from 'crypto';
 import { hashClientPassword } from './hashClientLogin';
-import { matchSnac, parseSnac } from './snacUtils';
+import { matchSnac, parseSnac } from '../snacUtils';
 import {
     authKeyResponseSnac,
     loginErrorSnac,
     loginSuccessSnac,
-} from './serverSentSnacs';
+} from './serverSnacs';
 import { parseAuthRequest, parseMD5LoginRequest } from './clientSnacs';
-import { LOGIN_ERRORS } from './constants';
+import { LOGIN_ERRORS } from '../constants';
 
 /**
  * @summary The first server an Oscar Protocol client
@@ -74,7 +74,10 @@ export class AIMAuthServer extends OscarServer {
                     salt: state.getSalt(),
                 });
                 const isValidUsername = true; // TODO: Real lookup
-                const isValidPass = payload.passwordHash.equals(hashToMatch);
+                const isValidPass = crypto.timingSafeEqual(
+                    payload.passwordHash,
+                    hashToMatch,
+                );
 
                 // TODO: handle various diff error types,
                 // rather than mapping all to INCORRECT_NICK_OR_PASS
@@ -114,19 +117,20 @@ export class AIMAuthServer extends OscarServer {
                 oscarSocket.write(responseFlap);
                 return;
             }
-            console.log('Unhandled Channel 2 Flap: ', flap);
+            console.log('AIMAuthServer Unhandled Channel 2 Flap: ', flap);
         });
 
         oscarSocket.onChannel(0x3, (flap) => {
-            console.log('Unimplemented channel 3 flap: ', flap);
+            console.log('AIMAuthServer unimplemented channel 3 flap: ', flap);
         });
 
         oscarSocket.onChannel(0x4, (flap) => {
-            console.log('Unimplemented channel 4 flap: ', flap);
+            // TODO: handle disconnect negotiation
+            console.log('AIMAuthServer unimplemented channel 4 flap: ', flap);
         });
 
         oscarSocket.onChannel(0x5, (flap) => {
-            console.log('Unimplemented channel 5 flap: ', flap);
+            console.log('AIMAuthServer unimplemented channel 5 flap: ', flap);
         });
 
         // Initialize state needed for auth requests

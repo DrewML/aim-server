@@ -1,7 +1,7 @@
 import assert from 'assert';
-import { stringTLV, uint16TLV } from './buildTLV';
-import { buildSnac } from './snacUtils';
-import { LOGIN_ERRORS, SNACS, TLVS } from './constants';
+import { stringTLV, uint16TLV } from '../buildTLV';
+import { buildSnac } from '../snacUtils';
+import { SNACS, TLVS } from '../constants';
 
 /**
  * @see http://iserverd1.khstu.ru/oscar/snac_17_07.html
