@@ -46,41 +46,53 @@ export const SNACS = {
             SUPPORTED_FAMILIES: 0x3,
             CLIENT_FAMILY_VERSIONS: 0x17,
             SERVER_FAMILY_VERSIONS: 0x18,
-            RATE_REQUEST: 0x6,
+            RATE_INFO_REQUEST: 0x6,
+            RATE_INFO_RESPONSE: 0x7,
         },
     },
     LOCATION: {
         family: 0x2,
+        subtypes: {},
     },
     BUDDYLIST: {
         family: 0x3,
+        subtypes: {},
     },
     ICBM: {
         family: 0x4,
+        subtypes: {},
     },
     INVITATION: {
         family: 0x6,
+        subtypes: {},
     },
     ADMINISTRATIVE: {
         family: 0x7,
+        subtypes: {},
     },
     POPUP_NOTICE: {
         family: 0x8,
+        subtypes: {},
     },
     PRIVACY_MGMT: {
         family: 0x9,
+        subtypes: {},
     },
     USER_LOOKUP: {
         family: 0x0a,
+        subtypes: {},
     },
     USAGE_STATS: {
         family: 0x0b,
+        subtypes: {},
     },
     SSI: {
         family: 0x13,
+        subtypes: {},
     },
     OFFLINE: {
         family: 0x15,
+        subtypes: {},
     },
     AUTH: {
         family: 0x17,

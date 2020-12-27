@@ -2,6 +2,7 @@ import assert from 'assert';
 import { stringTLV, uint16TLV } from '../buildTLV';
 import { buildSnac } from '../snacUtils';
 import { SNACS, TLVS } from '../constants';
+import { uint16BEBuffer } from '../buf';
 
 /**
  * @see http://iserverd1.khstu.ru/oscar/snac_17_07.html
@@ -14,8 +15,7 @@ export function authKeyResponseSnac(authKey: string, reqID: number) {
     const authKeyBuf = Buffer.from(authKey, 'utf8');
     // Note: The linked docs for this SNAC are wrong.
     // The length should be a word (2 byte), not a dword (4 bytes)
-    const authKeyLen = Buffer.alloc(2);
-    authKeyLen.writeUInt16BE(authKeyBuf.byteLength, 0);
+    const authKeyLen = uint16BEBuffer([authKeyBuf.byteLength]);
 
     return buildSnac({
         family: SNACS.AUTH.family,

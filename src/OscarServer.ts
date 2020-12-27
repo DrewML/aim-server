@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { Flap } from './types';
+import { Flap, FlapType } from './types';
 import { parseFlap, buildFlap } from './flapUtils';
 import { createServer, Socket, Server, AddressInfo } from 'net';
 import { MultiMap } from './MultiMap';
@@ -46,13 +46,13 @@ export class OscarServer {
     }
 }
 
-interface ChannelListener {
+interface FlapListener {
     (flap: Flap): void;
 }
 
 export class OscarSocket {
     private sequenceID = 0;
-    private channelListeners = new MultiMap<number, ChannelListener>();
+    private flapListeners = new MultiMap<number, FlapListener>();
 
     constructor(private socket: Socket) {
         socket.on('data', this.onData.bind(this));
@@ -73,12 +73,12 @@ export class OscarSocket {
      */
     sendStartFlap() {
         this.write({
-            channel: 1,
+            type: 1,
             data: Buffer.from([0x0, 0x0, 0x0, 0x1]),
         });
     }
 
-    write(flap: { channel: number; data: Buffer }) {
+    write(flap: { type: FlapType; data: Buffer }) {
         const fullFlap = {
             ...flap,
             sequence: this.sequenceID++,
@@ -86,19 +86,19 @@ export class OscarSocket {
         this.socket.write(buildFlap(fullFlap));
     }
 
-    onChannel(channel: number, listener: ChannelListener) {
-        this.channelListeners.set(channel, listener);
+    onFlap(type: FlapType, listener: FlapListener) {
+        this.flapListeners.set(type, listener);
         return this;
     }
 
     private onData(data: Buffer) {
         const flap = parseFlap(data);
         assert(
-            this.channelListeners.has(flap.channel),
-            `Channel ${flap.channel} has no handler in OscarSocket}`,
+            this.flapListeners.has(flap.type),
+            `No handler for Flap type ${flap.type}`,
         );
 
-        const listeners = this.channelListeners.get(flap.channel);
+        const listeners = this.flapListeners.get(flap.type);
         for (const listener of listeners) {
             listener(flap);
         }

@@ -61,7 +61,17 @@ export function familyVersionsSnac(opts: { reqID: number }) {
     });
 }
 
+/**
+ * @see http://iserverd.khstu.ru/oscar/snac_01_07.html
+ */
 export function rateLimitInfoSnac(opts: { reqID: number }) {
-    // TODO: Implement
-    return Buffer.alloc(0);
+    // TODO: hardcode a giant buffer here
+    const data = Buffer.alloc(0);
+
+    return buildSnac({
+        family: SNACS.GENERAL.family,
+        subtype: SNACS.GENERAL.subtypes.RATE_INFO_RESPONSE,
+        reqID: opts.reqID,
+        data,
+    });
 }

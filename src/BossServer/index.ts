@@ -1,4 +1,5 @@
 import { timingSafeEqual } from 'crypto';
+import { FlapType } from '../types';
 import { parseCookieRequest } from './clientSnacs';
 import { OscarServer, OscarSocket } from '../OscarServer';
 import {
@@ -16,51 +17,52 @@ export class BossServer extends OscarServer {
 
         oscarSocket.sendStartFlap();
 
-        oscarSocket.onChannel(0x1, (flap) => {
+        oscarSocket.onFlap(FlapType.SIGNON, (flap) => {
             const { authCookie } = parseCookieRequest(flap.data);
             // TODO: Grab cookie from shared storage with auth service
             const expectedCookie = Buffer.from('111111111', 'ascii');
             const validCookie = timingSafeEqual(authCookie, expectedCookie);
 
             // TODO: Unsure of what client expects for invalid cookie,
-            //       maybe close via channel 4?
+            //       maybe just a SIGNOFF flap? Let's just crash
+            //       the server for now
             assert(validCookie, 'BossServer: Invalid auth cookie');
 
             const snac = supportedFamiliesSnac({ reqID: 1 });
-            oscarSocket.write({ channel: 2, data: snac });
+            oscarSocket.write({ type: FlapType.DATA, data: snac });
         });
 
-        oscarSocket.onChannel(0x2, (flap) => {
+        oscarSocket.onFlap(FlapType.DATA, (flap) => {
             const snac = parseSnac(flap.data);
 
             if (matchSnac(snac, 'GENERAL', 'CLIENT_FAMILY_VERSIONS')) {
                 return oscarSocket.write({
-                    channel: 2,
+                    type: FlapType.DATA,
                     data: familyVersionsSnac({ reqID: snac.requestID }),
                 });
             }
 
-            if (matchSnac(snac, 'GENERAL', 'RATE_REQUEST')) {
+            if (matchSnac(snac, 'GENERAL', 'RATE_INFO_REQUEST')) {
                 assert(false, 'snac 01,07 not implemented yet');
                 return oscarSocket.write({
-                    channel: 2,
+                    type: FlapType.DATA,
                     data: rateLimitInfoSnac({ reqID: snac.requestID }),
                 });
             }
 
-            console.log('boss unhandled channel 2 flap: ', flap);
+            console.log('boss unhandled data flap: ', flap);
         });
 
-        oscarSocket.onChannel(0x3, (flap) => {
-            console.log('boss channel 3 flap: ', flap);
+        oscarSocket.onFlap(FlapType.ERROR, (flap) => {
+            console.log('boss error flap: ', flap);
         });
 
-        oscarSocket.onChannel(0x4, (flap) => {
-            console.log('boss channel 4 flap: ', flap);
+        oscarSocket.onFlap(FlapType.SIGNOFF, (flap) => {
+            console.log('boss signoff flap: ', flap);
         });
 
-        oscarSocket.onChannel(0x5, (flap) => {
-            console.log('boss channel 5 flap: ', flap);
+        oscarSocket.onFlap(FlapType.KEEPALIVE, (flap) => {
+            console.log('boss keepalive flap: ', flap);
         });
     }
 }

@@ -1,18 +1,18 @@
 import assert from 'assert';
-import { Flap } from './types';
+import { Flap, FlapType } from './types';
 
 interface BuildFlapOpts {
-    channel: number;
+    type: FlapType;
     sequence: number;
     data: Buffer;
 }
 
-export function buildFlap({ channel, sequence, data }: BuildFlapOpts) {
-    assert(channel < 6 && channel > 0, `Unexpected Channel: ${channel}`);
+export function buildFlap({ type, sequence, data }: BuildFlapOpts) {
+    assert(type < 6 && type > 0, `Unexpected Flap Frame Type: ${type}`);
 
     const buf = Buffer.alloc(6);
     buf.writeUInt8(0x2a, 0); // Flap start signal
-    buf.writeUInt8(channel, 1);
+    buf.writeUInt8(type, 1);
     buf.writeUInt16BE(sequence, 2);
     buf.writeUInt16BE(data.byteLength, 4);
 
@@ -27,7 +27,7 @@ export function parseFlap(rawFlap: Buffer): Flap {
     assert(id === 0x2a, 'Unexpected Flap ID');
 
     const flap: Flap = {
-        channel: rawFlap.readUInt8(1),
+        type: rawFlap.readUInt8(1),
         sequence: rawFlap.readUInt16BE(2),
         byteLength: rawFlap.readUInt16BE(4),
         data: rawFlap.subarray(6),

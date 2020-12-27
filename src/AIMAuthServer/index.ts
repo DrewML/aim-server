@@ -10,6 +10,7 @@ import {
 } from './serverSnacs';
 import { parseAuthRequest, parseMD5LoginRequest } from './clientSnacs';
 import { LOGIN_ERRORS } from '../constants';
+import { FlapType } from '../types';
 
 /**
  * @summary The first server an Oscar Protocol client
@@ -30,12 +31,12 @@ export class AIMAuthServer extends OscarServer {
         const { host, port } = oscarSocket.remoteAddress;
         console.log(`AIMAuthServer: New connection from ${host}:${port}`);
 
-        oscarSocket.onChannel(0x1, (flap) => {
+        oscarSocket.onFlap(FlapType.SIGNON, (flap) => {
             const flapVersion = flap.data.readUInt32BE(0);
             assert(flapVersion === 0x1, 'Incorrect client FLAP version');
         });
 
-        oscarSocket.onChannel(0x2, (flap) => {
+        oscarSocket.onFlap(FlapType.SIGNOFF, (flap) => {
             const state = this.getState(oscarSocket);
             const snac = parseSnac(flap.data);
 
@@ -48,7 +49,7 @@ export class AIMAuthServer extends OscarServer {
 
                 state.setScreenname(authReq.screenname);
                 const responseFlap = {
-                    channel: 2,
+                    type: FlapType.DATA,
                     data: authKeyResponseSnac(authKey, snac.requestID),
                 };
 
@@ -83,7 +84,7 @@ export class AIMAuthServer extends OscarServer {
                 // rather than mapping all to INCORRECT_NICK_OR_PASS
                 if (!(isValidUsername && isValidPass)) {
                     const responseFlap = {
-                        channel: 2,
+                        type: FlapType.DATA,
                         data: loginErrorSnac({
                             screenname: payload.screenname,
                             errorCode: LOGIN_ERRORS.INCORRECT_NICK_OR_PASS,
@@ -97,7 +98,7 @@ export class AIMAuthServer extends OscarServer {
                 }
 
                 const responseFlap = {
-                    channel: 2,
+                    type: FlapType.DATA,
                     data: loginSuccessSnac({
                         screenname: payload.screenname,
                         // TODO: Should be pulled from DB when real
@@ -117,20 +118,20 @@ export class AIMAuthServer extends OscarServer {
                 oscarSocket.write(responseFlap);
                 return;
             }
-            console.log('AIMAuthServer Unhandled Channel 2 Flap: ', flap);
+            console.log('AIMAuthServer data Flap: ', flap);
         });
 
-        oscarSocket.onChannel(0x3, (flap) => {
-            console.log('AIMAuthServer unimplemented channel 3 flap: ', flap);
+        oscarSocket.onFlap(FlapType.ERROR, (flap) => {
+            console.log('AIMAuthServer unhandled error flap: ', flap);
         });
 
-        oscarSocket.onChannel(0x4, (flap) => {
+        oscarSocket.onFlap(FlapType.SIGNOFF, (flap) => {
             // TODO: handle disconnect negotiation
-            console.log('AIMAuthServer unimplemented channel 4 flap: ', flap);
+            console.log('AIMAuthServer unhandled signoff flap: ', flap);
         });
 
-        oscarSocket.onChannel(0x5, (flap) => {
-            console.log('AIMAuthServer unimplemented channel 5 flap: ', flap);
+        oscarSocket.onFlap(FlapType.KEEPALIVE, (flap) => {
+            console.log('AIMAuthServer unhandled keepalive flap: ', flap);
         });
 
         // Initialize state needed for auth requests
