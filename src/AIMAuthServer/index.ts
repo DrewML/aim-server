@@ -36,7 +36,7 @@ export class AIMAuthServer extends OscarServer {
             assert(flapVersion === 0x1, 'Incorrect client FLAP version');
         });
 
-        oscarSocket.onFlap(FlapType.SIGNOFF, (flap) => {
+        oscarSocket.onFlap(FlapType.DATA, (flap) => {
             const state = this.getState(oscarSocket);
             const snac = parseSnac(flap.data);
 
