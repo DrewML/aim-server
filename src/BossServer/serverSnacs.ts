@@ -36,6 +36,11 @@ export function supportedFamiliesSnac(opts: { reqID: number }) {
  * @see http://iserverd.khstu.ru/oscar/snac_01_18.html
  */
 export function familyVersionsSnac(opts: { reqID: number }) {
+    // Note: The official Oscar protocol docs claim something
+    // completely different for this snac. But the unofficial
+    // docs seem to be correct (weird)
+    // http://web.archive.org/web/20080308233204/http://dev.aol.com/aim/oscar/#OSERVICE__MIGRATE_GROUPS
+
     // prettier-ignore
     const versions = uint16BEBuffer([
         // family, version
@@ -62,11 +67,24 @@ export function familyVersionsSnac(opts: { reqID: number }) {
 }
 
 /**
+ * @description Create a SNAC specifying the server-enforced
+ *              rate limits. Note that this server currently
+ *              doesn't enforce rate limits, this is just a
+ *              necessary part of the signon process
  * @see http://iserverd.khstu.ru/oscar/snac_01_07.html
+ * @see http://web.archive.org/web/20060113101258/http://joust.kano.net/wiki/oscar/moin.cgi/RateLimiting
+ * @see http://web.archive.org/web/20080308233204/http://dev.aol.com/aim/oscar/#RATELIMIT
  */
 export function rateLimitInfoSnac(opts: { reqID: number }) {
-    // TODO: hardcode a giant buffer here
-    const data = Buffer.alloc(0);
+    // prettier-ignore
+    const data = Buffer.from([
+        0x0, 0x0, // uint16, number of rate classes
+        // Here is where all the rate classes would normally go.
+        // Luckily we can save a bunch of time because AIM clients
+        // (at least 5.2) will accept 0 total rate classes, as far
+        // as I can tell. Will likely implement proper rate classes
+        // when the server itself has rate limiting functionality
+    ]);
 
     return buildSnac({
         family: SNACS.GENERAL.family,

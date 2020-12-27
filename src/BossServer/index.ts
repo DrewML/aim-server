@@ -43,7 +43,6 @@ export class BossServer extends OscarServer {
             }
 
             if (matchSnac(snac, 'GENERAL', 'RATE_INFO_REQUEST')) {
-                assert(false, 'snac 01,07 not implemented yet');
                 return oscarSocket.write({
                     type: FlapType.DATA,
                     data: rateLimitInfoSnac({ reqID: snac.requestID }),
