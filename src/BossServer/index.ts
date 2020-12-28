@@ -6,6 +6,8 @@ import {
     supportedFamiliesSnac,
     familyVersionsSnac,
     rateLimitInfoSnac,
+    selfInfoSnac,
+    ssiLimitsSnac,
 } from './serverSnacs';
 import assert from 'assert';
 import { parseSnac, matchSnac } from '../snacUtils';
@@ -46,6 +48,22 @@ export class BossServer extends OscarServer {
                 return oscarSocket.write({
                     type: FlapType.DATA,
                     data: rateLimitInfoSnac({ reqID: snac.requestID }),
+                });
+            }
+
+            if (matchSnac(snac, 'GENERAL', 'SELF_INFO_REQUEST')) {
+                // TODO: actually implement selfInfoSnac
+                return oscarSocket.write({
+                    type: FlapType.DATA,
+                    data: selfInfoSnac({ reqID: snac.requestID }),
+                });
+            }
+
+            if (matchSnac(snac, 'SSI', 'SSI_LIMITS_REQUEST')) {
+                // TODO: actually implement ssiLimitsSnac
+                return oscarSocket.write({
+                    type: FlapType.DATA,
+                    data: ssiLimitsSnac({ reqID: snac.requestID }),
                 });
             }
 

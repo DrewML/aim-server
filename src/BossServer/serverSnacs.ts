@@ -1,6 +1,6 @@
 import { buildSnac } from '../snacUtils';
 import { SNACS } from '../constants';
-import { uint16BEBuffer } from '../buf';
+import { uint16 } from '../buf';
 
 /**
  * @see http://iserverd.khstu.ru/oscar/snac_01_03.html
@@ -9,7 +9,7 @@ export function supportedFamiliesSnac(opts: { reqID: number }) {
     /**
      * @see http://iserverd.khstu.ru/oscar/families.html
      */
-    const families = uint16BEBuffer([
+    const families = uint16([
         SNACS.GENERAL.family,
         SNACS.LOCATION.family,
         SNACS.BUDDYLIST.family,
@@ -42,7 +42,7 @@ export function familyVersionsSnac(opts: { reqID: number }) {
     // http://web.archive.org/web/20080308233204/http://dev.aol.com/aim/oscar/#OSERVICE__MIGRATE_GROUPS
 
     // prettier-ignore
-    const versions = uint16BEBuffer([
+    const versions = uint16([
         // family, version
         SNACS.GENERAL.family, 0x3,
         SNACS.LOCATION.family, 0x1,
@@ -92,4 +92,17 @@ export function rateLimitInfoSnac(opts: { reqID: number }) {
         reqID: opts.reqID,
         data,
     });
+}
+/**
+ * @see http://iserverd.khstu.ru/oscar/snac_01_0f.html
+ */
+export function selfInfoSnac(opts: { reqID: number }) {
+    return Buffer.alloc(0);
+}
+
+/**
+ * @see http://iserverd.khstu.ru/oscar/snac_13_03.html
+ */
+export function ssiLimitsSnac(opts: { reqID: number }) {
+    return Buffer.alloc(0);
 }

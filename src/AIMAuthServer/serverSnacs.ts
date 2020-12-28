@@ -1,8 +1,9 @@
 import assert from 'assert';
-import { stringTLV, uint16TLV } from '../buildTLV';
+import { TLVBuilder } from '../buildTLV';
 import { buildSnac } from '../snacUtils';
-import { SNACS, TLVS } from '../constants';
-import { uint16BEBuffer } from '../buf';
+import { SNACS } from '../constants';
+import { uint16 } from '../buf';
+import { TLV } from '../types';
 
 /**
  * @see http://iserverd1.khstu.ru/oscar/snac_17_07.html
@@ -15,7 +16,7 @@ export function authKeyResponseSnac(authKey: string, reqID: number) {
     const authKeyBuf = Buffer.from(authKey, 'utf8');
     // Note: The linked docs for this SNAC are wrong.
     // The length should be a word (2 byte), not a dword (4 bytes)
-    const authKeyLen = uint16BEBuffer([authKeyBuf.byteLength]);
+    const authKeyLen = uint16([authKeyBuf.byteLength]);
 
     return buildSnac({
         family: SNACS.AUTH.family,
@@ -35,15 +36,16 @@ export function loginErrorSnac(opts: {
     errorURL: string;
     reqID: number;
 }) {
-    const screenname = stringTLV(TLVS.SCREENNAME, opts.screenname);
-    const errorCode = uint16TLV(TLVS.ERROR_SUBCODE, opts.errorCode);
-    const errorURL = stringTLV(TLVS.ERROR_DESCRIP_URL, opts.errorURL);
+    const tlv = new TLVBuilder()
+        .string(TLV.SCREENNAME, opts.screenname)
+        .uint16(TLV.ERROR_SUBCODE, opts.errorCode)
+        .string(TLV.ERROR_DESCRIP_URL, opts.errorURL);
 
     return buildSnac({
         family: SNACS.AUTH.family,
         subtype: SNACS.AUTH.subtypes.LOGIN_REPLY,
         reqID: opts.reqID,
-        data: Buffer.concat([screenname, errorCode, errorURL]),
+        data: tlv.asRest(),
     });
 }
 
@@ -60,35 +62,19 @@ export function loginSuccessSnac(opts: {
     passwordChangeURL: string;
     reqID: number;
 }) {
-    const screenname = stringTLV(TLVS.SCREENNAME, opts.screenname);
-    const email = stringTLV(TLVS.EMAIL, opts.email);
-    const bosAddress = stringTLV(TLVS.BOS_ADDRESS, opts.bosAddress);
-    const authCookie = stringTLV(TLVS.AUTH_COOKIE, opts.authCookie);
-    const betaVersion = stringTLV(
-        TLVS.LATEST_BETA_VERSION,
-        opts.latestBetaVersion,
-    );
-    const betaChecksum = stringTLV(
-        TLVS.BETA_DIGEST_SIG,
-        opts.latestBetaChecksum,
-    );
-    const changePasswordURL = stringTLV(
-        TLVS.CHANGE_PASSWORD_URL,
-        opts.passwordChangeURL,
-    );
+    const tlv = new TLVBuilder()
+        .string(TLV.SCREENNAME, opts.screenname)
+        .string(TLV.EMAIL, opts.email)
+        .string(TLV.BOS_ADDRESS, opts.bosAddress)
+        .string(TLV.AUTH_COOKIE, opts.authCookie)
+        .string(TLV.LATEST_BETA_VERSION, opts.latestBetaVersion)
+        .string(TLV.BETA_DIGEST_SIG, opts.latestBetaChecksum)
+        .string(TLV.CHANGE_PASSWORD_URL, opts.passwordChangeURL);
 
     return buildSnac({
         family: SNACS.AUTH.family,
         subtype: SNACS.AUTH.subtypes.LOGIN_REPLY,
         reqID: opts.reqID,
-        data: Buffer.concat([
-            screenname,
-            email,
-            bosAddress,
-            authCookie,
-            betaVersion,
-            betaChecksum,
-            changePasswordURL,
-        ]),
+        data: tlv.asRest(),
     });
 }

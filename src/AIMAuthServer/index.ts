@@ -9,8 +9,7 @@ import {
     loginSuccessSnac,
 } from './serverSnacs';
 import { parseAuthRequest, parseMD5LoginRequest } from './clientSnacs';
-import { LOGIN_ERRORS } from '../constants';
-import { FlapType } from '../types';
+import { FlapType, LoginError } from '../types';
 
 /**
  * @summary The first server an Oscar Protocol client
@@ -87,7 +86,7 @@ export class AIMAuthServer extends OscarServer {
                         type: FlapType.DATA,
                         data: loginErrorSnac({
                             screenname: payload.screenname,
-                            errorCode: LOGIN_ERRORS.INCORRECT_NICK_OR_PASS,
+                            errorCode: LoginError.INCORRECT_NICK_OR_PASS,
                             errorURL: 'https://drewml.com',
                             reqID: snac.requestID,
                         }),
