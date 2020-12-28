@@ -3,7 +3,7 @@ import { TLVBuilder } from '../buildTLV';
 import { buildSnac } from '../snacUtils';
 import { SNACS } from '../constants';
 import { uint16 } from '../buf';
-import { TLV } from '../types';
+import { TLV, LoginError } from '../types';
 
 /**
  * @see http://iserverd1.khstu.ru/oscar/snac_17_07.html
@@ -32,7 +32,7 @@ export function authKeyResponseSnac(authKey: string, reqID: number) {
 export function loginErrorSnac(opts: {
     screenname: string;
     // http://iserverd1.khstu.ru/oscar/auth_failed.html
-    errorCode: number;
+    errorCode: LoginError;
     errorURL: string;
     reqID: number;
 }) {

@@ -27,3 +27,8 @@ This has only been tested with AIM for Windows version `5.2.3292`, but theoretic
 -   https://github.com/bitm4ster/AOL-Instant-Messenger-Server/ (Oscar server written in VB6. and it actually compiles!)
 -   http://iserverd.khstu.ru/download/ (Oscar Server written in C++. Haven't attempted to compile yet, but a great reference)
 -   http://web.archive.org/web/20060113083940/http://joust.kano.net/wiki/oscar/moin.cgi/ (Unofficial protocol docs)
+
+## Things I wish I knew before I started
+
+-   The [unofficial docs I was following for SNAC 17,07](http://iserverd1.khstu.ru/oscar/snac_17_07.html) are wrong about the size of the auth key length field (should be 2 byte, docs say 4)
+-   The list of TLV tags are scoped to each service. In other words, auth and boss servers can both have a TLV with tag 0x1, used for completely different things.

@@ -1,6 +1,8 @@
 import { buildSnac } from '../snacUtils';
 import { SNACS } from '../constants';
 import { uint16 } from '../buf';
+import { TLVBuilder } from '../buildTLV';
+import { TLV, UserClass, UserStatus } from '../types';
 
 /**
  * @see http://iserverd.khstu.ru/oscar/snac_01_03.html
@@ -96,8 +98,16 @@ export function rateLimitInfoSnac(opts: { reqID: number }) {
 /**
  * @see http://iserverd.khstu.ru/oscar/snac_01_0f.html
  */
-export function selfInfoSnac(opts: { reqID: number }) {
-    return Buffer.alloc(0);
+export function selfInfoSnac(opts: {
+    userClass: UserClass;
+    userStatus: UserStatus;
+    externalIP: string;
+    idleTime: number;
+    signonTime: number;
+    memberSince: number;
+    reqID: number;
+}) {
+    const tlv = new TLVBuilder();
 }
 
 /**
