@@ -1,12 +1,11 @@
 import { parseTLVs } from '../parseTLVs';
-import { TLV } from '../types';
 
 /**
  * @see http://iserverd1.khstu.ru/oscar/snac_17_06.html
  */
 export function parseAuthRequest(data: Buffer) {
     const tlvs = parseTLVs(data);
-    const screennameTLV = tlvs.first(TLV.SCREENNAME);
+    const screennameTLV = tlvs.first(0x1);
 
     return {
         screenname: screennameTLV.value.toString('ascii'),
@@ -18,10 +17,10 @@ export function parseAuthRequest(data: Buffer) {
  */
 export function parseMD5LoginRequest(data: Buffer) {
     const tlvs = parseTLVs(data);
-    const screenname = tlvs.first(TLV.SCREENNAME).value.toString('ascii');
-    const newHashStrategy = tlvs.has(TLV.USE_NEW_HASH_STRATEGY);
-    const passwordHash = tlvs.first(TLV.PASSWORD_HASH).value;
-    const clientID = tlvs.first(TLV.CLIENT_ID_STRING).value.toString('ascii');
+    const screenname = tlvs.first(0x1).value.toString('ascii');
+    const newHashStrategy = tlvs.has(0x4c);
+    const passwordHash = tlvs.first(0x25).value;
+    const clientID = tlvs.first(0x3).value.toString('ascii');
 
     return { screenname, passwordHash, clientID, newHashStrategy };
 }

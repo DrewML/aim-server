@@ -1,4 +1,3 @@
-import { TLV } from './types';
 import { uint16 } from './buf';
 
 /**
@@ -44,7 +43,7 @@ export class TLVBuilder {
         return Buffer.concat(this.tlvs);
     }
 
-    uint8(tag: TLV, value: number) {
+    uint8(tag: number, value: number) {
         const buf = Buffer.alloc(5);
         buf.writeUInt16BE(tag);
         buf.writeUInt16BE(1, 2);
@@ -53,7 +52,7 @@ export class TLVBuilder {
         return this;
     }
 
-    uint16(tag: TLV, value: number) {
+    uint16(tag: number, value: number) {
         const buf = Buffer.alloc(6);
         buf.writeUInt16BE(tag);
         buf.writeUInt16BE(2, 2);
@@ -62,7 +61,7 @@ export class TLVBuilder {
         return this;
     }
 
-    uint32(tag: TLV, value: number) {
+    uint32(tag: number, value: number) {
         const buf = Buffer.alloc(8);
         buf.writeUInt16BE(tag);
         buf.writeUInt16BE(4, 2);
@@ -71,7 +70,7 @@ export class TLVBuilder {
         return this;
     }
 
-    string(tag: TLV, value: string) {
+    string(tag: number, value: string) {
         const typeAndLength = Buffer.alloc(4);
         typeAndLength.writeUInt16BE(tag);
         typeAndLength.writeUInt16BE(value.length, 2);

@@ -2,7 +2,7 @@ import { buildSnac } from '../snacUtils';
 import { SNACS } from '../constants';
 import { uint16 } from '../buf';
 import { TLVBuilder } from '../buildTLV';
-import { TLV, UserClass, UserStatus } from '../types';
+import { UserClass, UserStatus } from './constants';
 
 /**
  * @see http://iserverd.khstu.ru/oscar/snac_01_03.html
@@ -107,7 +107,7 @@ export function selfInfoSnac(opts: {
     memberSince: number;
     reqID: number;
 }) {
-    const tlv = new TLVBuilder();
+    // const tlv = new TLVBuilder().uint16(TLV.USER);
 }
 
 /**

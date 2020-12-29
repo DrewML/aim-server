@@ -3,7 +3,7 @@ import { TLVBuilder } from '../buildTLV';
 import { buildSnac } from '../snacUtils';
 import { SNACS } from '../constants';
 import { uint16 } from '../buf';
-import { TLV, LoginError } from '../types';
+import { LoginError } from '../types';
 
 /**
  * @see http://iserverd1.khstu.ru/oscar/snac_17_07.html
@@ -37,9 +37,9 @@ export function loginErrorSnac(opts: {
     reqID: number;
 }) {
     const tlv = new TLVBuilder()
-        .string(TLV.SCREENNAME, opts.screenname)
-        .uint16(TLV.ERROR_SUBCODE, opts.errorCode)
-        .string(TLV.ERROR_DESCRIP_URL, opts.errorURL);
+        .string(0x1, opts.screenname)
+        .uint16(0x8, opts.errorCode)
+        .string(0x4, opts.errorURL);
 
     return buildSnac({
         family: SNACS.AUTH.family,
@@ -63,13 +63,13 @@ export function loginSuccessSnac(opts: {
     reqID: number;
 }) {
     const tlv = new TLVBuilder()
-        .string(TLV.SCREENNAME, opts.screenname)
-        .string(TLV.EMAIL, opts.email)
-        .string(TLV.BOS_ADDRESS, opts.bosAddress)
-        .string(TLV.AUTH_COOKIE, opts.authCookie)
-        .string(TLV.LATEST_BETA_VERSION, opts.latestBetaVersion)
-        .string(TLV.BETA_DIGEST_SIG, opts.latestBetaChecksum)
-        .string(TLV.CHANGE_PASSWORD_URL, opts.passwordChangeURL);
+        .string(0x1, opts.screenname)
+        .string(0x11, opts.email)
+        .string(0x5, opts.bosAddress)
+        .string(0x6, opts.authCookie)
+        .string(0x40, opts.latestBetaVersion)
+        .string(0x48, opts.latestBetaChecksum)
+        .string(0x54, opts.passwordChangeURL);
 
     return buildSnac({
         family: SNACS.AUTH.family,

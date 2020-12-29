@@ -31,4 +31,4 @@ This has only been tested with AIM for Windows version `5.2.3292`, but theoretic
 ## Things I wish I knew before I started
 
 -   The [unofficial docs I was following for SNAC 17,07](http://iserverd1.khstu.ru/oscar/snac_17_07.html) are wrong about the size of the auth key length field (should be 2 byte, docs say 4)
--   The list of TLV tags are scoped to each service. In other words, auth and boss servers can both have a TLV with tag 0x1, used for completely different things.
+-   TLV "tags" (integer used to represent them) seem to be reused often. In other words, auth and boss servers can both have multiple TLV with tag 0x1, used for completely different things. They seem to change per request/response

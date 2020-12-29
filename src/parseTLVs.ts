@@ -1,5 +1,4 @@
 import assert from 'assert';
-import { TLV as TLVTag } from './types';
 import { MultiMap } from './MultiMap';
 
 /**
@@ -17,7 +16,7 @@ interface TLV {
  * @todo Just for fun, should make a lazy variant of this parser
  */
 export function parseTLVs(data: Buffer) {
-    const tlvs = new MultiMap<TLVTag, TLV>();
+    const tlvs = new MultiMap<number, TLV>();
 
     for (let cursor = 0; cursor < data.byteLength /* */; ) {
         const type = data.readUInt16BE(cursor);
