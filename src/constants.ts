@@ -11,6 +11,7 @@ export const SNACS = {
             RATE_INFO_REQUEST: 0x6,
             RATE_INFO_RESPONSE: 0x7,
             SELF_INFO_REQUEST: 0x0e,
+            SELF_INFO_RESPONSE: 0x0f,
         },
     },
     LOCATION: {

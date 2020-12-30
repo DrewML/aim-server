@@ -99,20 +99,228 @@ export function rateLimitInfoSnac(opts: { reqID: number }) {
  * @see http://iserverd.khstu.ru/oscar/snac_01_0f.html
  */
 export function selfInfoSnac(opts: {
+    screenName: string;
     userClass: UserClass;
     userStatus: UserStatus;
-    externalIP: string;
+    externalIP: number; // todo: just accept a string and convert it
     idleTime: number;
     signonTime: number;
     memberSince: number;
     reqID: number;
 }) {
-    // const tlv = new TLVBuilder().uint16(TLV.USER);
+    // const tlv = new TLVBuilder()
+    //     .uint32(0x1, opts.userClass)
+    //     .uint32(0x6, opts.userStatus)
+    //     .uint32(0xa, opts.externalIP) // external ip
+    //     .uint32(0xf, opts.idleTime) // client idle time
+    //     .uint32(0x3, opts.signonTime) // signon time
+    //     .uint32(0x5, opts.memberSince); // member since
+
+    // const screenname = Buffer.from(opts.screenName, 'ascii');
+    // const length = Buffer.from([opts.screenName.length]);
+    // const warningLevel = Buffer.from([0x0, 0x0]);
+    // const data = Buffer.concat([
+    //     length,
+    //     screenname,
+    //     warningLevel,
+    //     tlv.asBlock(),
+    // ]);
+
+    const data = Buffer.from([
+        0xd, // screenname ascii length
+        0x78,
+        0x58,
+        0x41,
+        0x6f,
+        0x6c,
+        0x34,
+        0x4c,
+        0x79,
+        0x66,
+        0x65,
+        0x58,
+        0x78,
+        0x72,
+        0x00,
+        0x00,
+        0x00,
+        0x06,
+        0x00,
+        0x01,
+        0x00,
+        0x02,
+        0x00,
+        0x90,
+        0x00,
+        0x0f,
+        0x00,
+        0x04,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x03,
+        0x00,
+        0x04,
+        0x41,
+        0xe9,
+        0xb4,
+        0xbb,
+        0x00,
+        0x0a,
+        0x00,
+        0x04,
+        0x44,
+        0xe3,
+        0xa7,
+        0x35,
+        0x00,
+        0x1e,
+        0x00,
+        0x04,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x05,
+        0x00,
+        0x04,
+        0x38,
+        0xc4,
+        0x76,
+        0xe8,
+    ]);
+
+    return buildSnac({
+        family: SNACS.GENERAL.family,
+        subtype: SNACS.GENERAL.subtypes.SELF_INFO_RESPONSE,
+        reqID: opts.reqID,
+        data,
+    });
 }
 
 /**
  * @see http://iserverd.khstu.ru/oscar/snac_13_03.html
  */
 export function ssiLimitsSnac(opts: { reqID: number }) {
-    return Buffer.alloc(0);
+    // copypasta, cleanup later
+    const data = Buffer.from([
+        0x00,
+        0x04,
+        0x00,
+        0x34,
+        0x01,
+        0x90,
+        0x00,
+        0x3d,
+        0x00,
+        0xc8,
+        0x00,
+        0xc8,
+        0x00,
+        0x01,
+        0x00,
+        0x01,
+        0x00,
+        0x96,
+        0x00,
+        0x0c,
+        0x00,
+        0x0c,
+        0x00,
+        0x00,
+        0x00,
+        0x32,
+        0x00,
+        0x32,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x01,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x0f,
+        0x00,
+        0x01,
+        0x00,
+        0x28,
+        0x00,
+        0x01,
+        0x00,
+        0x0a,
+        0x00,
+        0xc8,
+        0x00,
+        0x02,
+        0x00,
+        0x02,
+        0x00,
+        0xfe,
+        0x00,
+        0x03,
+        0x00,
+        0x02,
+        0x01,
+        0xfc,
+        0x00,
+        0x05,
+        0x00,
+        0x02,
+        0x00,
+        0x64,
+        0x00,
+        0x06,
+        0x00,
+        0x02,
+        0x00,
+        0x61,
+        0x00,
+        0x07,
+        0x00,
+        0x02,
+        0x00,
+        0xc8,
+        0x00,
+        0x08,
+        0x00,
+        0x02,
+        0x00,
+        0x0a,
+        0x00,
+        0x09,
+        0x00,
+        0x04,
+        0x00,
+        0x06,
+        0x97,
+        0x80,
+        0x00,
+        0x0a,
+        0x00,
+        0x04,
+        0x00,
+        0x00,
+        0x00,
+        0x0e,
+    ]);
+
+    return buildSnac({
+        family: SNACS.SSI.family,
+        subtype: SNACS.SSI.subtypes.SSI_LIMITS_RESPONSE,
+        reqID: opts.reqID,
+        data,
+    });
 }

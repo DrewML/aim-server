@@ -14,7 +14,7 @@ export class TLVBuilder {
      *          followed by the TLV data
      */
     asBlock() {
-        return Buffer.from([uint16(this.tlvs.length), this.concatAll()]);
+        return Buffer.concat([uint16(this.tlvs.length), this.concatAll()]);
     }
 
     /**
@@ -25,7 +25,7 @@ export class TLVBuilder {
      */
     asLBlock() {
         const all = this.concatAll();
-        return Buffer.from([uint16(all.byteLength), all]);
+        return Buffer.concat([uint16(all.byteLength), all]);
     }
 
     /**
@@ -41,6 +41,14 @@ export class TLVBuilder {
 
     private concatAll() {
         return Buffer.concat(this.tlvs);
+    }
+
+    buffer(tag: number, value: Buffer) {
+        const buf = Buffer.alloc(4);
+        buf.writeUInt16BE(tag);
+        buf.writeUInt16BE(value.byteLength, 2);
+        this.tlvs.push(Buffer.concat([buf, value]));
+        return this;
     }
 
     uint8(tag: number, value: number) {
