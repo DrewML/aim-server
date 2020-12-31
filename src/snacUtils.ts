@@ -1,5 +1,9 @@
 import { Snac } from './types';
 import { SNACS } from './constants';
+import { prettyPrint } from './buf';
+
+const BOLD_TEXT = '\x1b[1m';
+const RESET_TEXT = '\x1b[0m';
 
 /**
  * @summary Determines whether a Snac is a specific
@@ -53,4 +57,19 @@ export function parseSnac(rawSnac: Buffer): Snac {
         requestID: rawSnac.readUInt32BE(6),
         data: rawSnac.subarray(10),
     };
+}
+
+/**
+ * @summary Pretty Print a parsed SNAC
+ */
+export function prettyPrintSnac(snac: Snac) {
+    const printedData = prettyPrint(snac.data);
+    const family = `0x${snac.family.toString(16)}`;
+    const subtype = `0x${snac.subtype.toString(16)}`;
+
+    return `${BOLD_TEXT}Family:${RESET_TEXT} ${family}
+${BOLD_TEXT}Subtype:${RESET_TEXT} ${subtype}
+${BOLD_TEXT}Flags:${RESET_TEXT} ${snac.flags}
+${BOLD_TEXT}Request ID:${RESET_TEXT} ${snac.requestID}
+${BOLD_TEXT}Payload:${RESET_TEXT}\n${printedData}\n`;
 }

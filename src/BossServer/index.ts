@@ -10,7 +10,7 @@ import {
     ssiLimitsSnac,
 } from './serverSnacs';
 import assert from 'assert';
-import { parseSnac, matchSnac } from '../snacUtils';
+import { parseSnac, matchSnac, prettyPrintSnac } from '../snacUtils';
 import { UserClass, UserStatus } from './constants';
 
 export class BossServer extends OscarServer {
@@ -75,7 +75,8 @@ export class BossServer extends OscarServer {
                 });
             }
 
-            console.log('boss unhandled data flap: ', flap);
+            console.log('BOSS: unhandled snac:');
+            console.log(prettyPrintSnac(snac));
         });
 
         oscarSocket.onFlap(FlapType.ERROR, (flap) => {
