@@ -11,7 +11,7 @@ export function buildFlap({ type, sequence, data }: BuildFlapOpts) {
     assert(type < 6 && type > 0, `Unexpected Flap Frame Type: ${type}`);
 
     const buf = Buffer.alloc(6);
-    buf.writeUInt8(0x2a, 0); // Flap start signal
+    buf.writeUInt8(0x2a, 0); // Flap start byte
     buf.writeUInt8(type, 1);
     buf.writeUInt16BE(sequence, 2);
     buf.writeUInt16BE(data.byteLength, 4);
@@ -26,12 +26,12 @@ export function parseFlap(rawFlap: Buffer): Flap {
     const id = rawFlap.readUInt8(0);
     assert(id === 0x2a, 'Unexpected Flap ID');
 
-    const flap: Flap = {
-        type: rawFlap.readUInt8(1),
-        sequence: rawFlap.readUInt16BE(2),
-        byteLength: rawFlap.readUInt16BE(4),
-        data: rawFlap.subarray(6),
-    };
+    const type = rawFlap.readUInt8(1);
+    const sequence = rawFlap.readUInt16BE(2);
+    const byteLength = rawFlap.readUInt16BE(4);
+    const remainingData = rawFlap.subarray(6);
 
-    return flap;
+    assert(remainingData.byteLength === byteLength, 'Malformed FLAP');
+
+    return { type, sequence, byteLength, data: remainingData };
 }
