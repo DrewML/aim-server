@@ -64,12 +64,15 @@ export function parseSnac(rawSnac: Buffer): Snac {
  */
 export function prettyPrintSnac(snac: Snac) {
     const printedData = prettyPrint(snac.data);
-    const family = `0x${snac.family.toString(16)}`;
-    const subtype = `0x${snac.subtype.toString(16)}`;
+    const hexFamily = snac.family.toString(16).padStart(2, '0');
+    const hexSubtype = snac.subtype.toString(16).padStart(2, '0');
+    const docsParam = `${hexFamily}_${hexSubtype}`;
+    const docsURL = `http://iserverd.khstu.ru/oscar/snac_${docsParam}.html`;
 
-    return `${BOLD_TEXT}Family:${RESET_TEXT} ${family}
-${BOLD_TEXT}Subtype:${RESET_TEXT} ${subtype}
-${BOLD_TEXT}Flags:${RESET_TEXT} ${snac.flags}
+    return `${BOLD_TEXT}Family:${RESET_TEXT} 0x${hexFamily}
+${BOLD_TEXT}Subtype:${RESET_TEXT} 0x${hexSubtype}
+${BOLD_TEXT}Flag Mask:${RESET_TEXT} 0b${snac.flags.toString(2)}
 ${BOLD_TEXT}Request ID:${RESET_TEXT} ${snac.requestID}
+${BOLD_TEXT}Possible Docs:${RESET_TEXT} ${docsURL}
 ${BOLD_TEXT}Payload:${RESET_TEXT}\n${printedData}\n`;
 }

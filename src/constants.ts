@@ -5,7 +5,9 @@ export const SNACS = {
     GENERAL: {
         family: 0x1,
         subtypes: {
+            CLIENT_READY: 0x2,
             SUPPORTED_FAMILIES: 0x3,
+            SERVICE_XFER_REQUEST: 0x4,
             CLIENT_FAMILY_VERSIONS: 0x17,
             SERVER_FAMILY_VERSIONS: 0x18,
             RATE_INFO_REQUEST: 0x6,
@@ -55,6 +57,8 @@ export const SNACS = {
         subtypes: {
             SSI_LIMITS_REQUEST: 0x2,
             SSI_LIMITS_RESPONSE: 0x3,
+            BUDDY_LIST_REQUEST: 0x4,
+            BUDDY_LIST_RESPONE: 0x6,
         },
     },
     OFFLINE: {
