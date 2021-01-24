@@ -1,5 +1,5 @@
 import test from 'tape';
-import { buildFlap, parseFlap } from '../flapUtils';
+import { buildFlap, parseFlaps } from '../flapUtils';
 
 test('buildFlap throws on invalid flap frame type', (t) => {
     t.plan(1);
@@ -28,7 +28,7 @@ test('buildFlap constructs a valid FLAP buffer', (t) => {
     t.end();
 });
 
-test('parseFlap parses a valid FLAP', (t) => {
+test('parseFlap parses a single valid FLAP', (t) => {
     // prettier-ignore
     const rawFlap = Buffer.from([
         0x2a, // flap start byte
@@ -37,7 +37,7 @@ test('parseFlap parses a valid FLAP', (t) => {
         0x0, 0x1, // data length
         0x0 // data
     ]);
-    const flap = parseFlap(rawFlap);
+    const [flap] = parseFlaps(rawFlap);
     t.equal(flap.type, 1);
     t.equal(flap.sequence, 1);
     t.equal(flap.byteLength, 1);
@@ -45,7 +45,31 @@ test('parseFlap parses a valid FLAP', (t) => {
     t.end();
 });
 
-test('parseFlap throws when missing flap start byte', (t) => {
+test('parseFlap parses 2 valid FLAPs', (t) => {
+    // prettier-ignore
+    const rawFlaps = Buffer.from([
+        0x2a, // flap start byte
+        0x1, // flap type
+        0x0, 0x1, // sequence num
+        0x0, 0x1, // data length
+        0x0, // data
+
+        0x2a, // flap start byte
+        0x2, // flap type
+        0x0, 0x2, // sequence num
+        0x0, 0x2, // data length
+        0x0, 0x0 // data
+    ]);
+
+    const [flap1, flap2] = parseFlaps(rawFlaps);
+    t.equal(flap1.type, 1);
+    t.equal(flap1.byteLength, 1);
+    t.equal(flap2.type, 2);
+    t.equal(flap2.byteLength, 2);
+    t.end();
+});
+
+test('parseFlap throws when missing flap start byte in first flap', (t) => {
     // prettier-ignore
     const rawFlap = Buffer.from([
         0x1, // (wrong) flap start byte
@@ -54,19 +78,8 @@ test('parseFlap throws when missing flap start byte', (t) => {
         0x0, 0x1, // data length
         0x0 // data
     ]);
-    t.throws(() => parseFlap(rawFlap), 'Unexpected Flap ID');
+    t.throws(() => parseFlaps(rawFlap), 'Unexpected Flap ID');
     t.end();
 });
 
-test('parseFlap throws when data exceeds claimed size', (t) => {
-    // prettier-ignore
-    const rawFlap = Buffer.from([
-        0x2a, // flap start byte
-        0x1, // flap type
-        0x0, 0x1, // sequence num
-        0x0, 0x1, // data length declared as 1 byte
-        0x0, 0x0 // 2 bytes of data
-    ]);
-    t.throws(() => parseFlap(rawFlap), 'Malformed FLAP');
-    t.end();
-});
+test.skip('parseFlap throws when flap data exceeds claimed size', () => {});

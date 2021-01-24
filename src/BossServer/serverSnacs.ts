@@ -1,7 +1,6 @@
 import { buildSnac } from '../snacUtils';
 import { SNACS } from '../constants';
 import { uint16 } from '../buf';
-import { TLVBuilder } from '../buildTLV';
 import { UserClass, UserStatus } from './constants';
 
 /**
@@ -108,24 +107,7 @@ export function selfInfoSnac(opts: {
     memberSince: number;
     reqID: number;
 }) {
-    // const tlv = new TLVBuilder()
-    //     .uint32(0x1, opts.userClass)
-    //     .uint32(0x6, opts.userStatus)
-    //     .uint32(0xa, opts.externalIP) // external ip
-    //     .uint32(0xf, opts.idleTime) // client idle time
-    //     .uint32(0x3, opts.signonTime) // signon time
-    //     .uint32(0x5, opts.memberSince); // member since
-
-    // const screenname = Buffer.from(opts.screenName, 'ascii');
-    // const length = Buffer.from([opts.screenName.length]);
-    // const warningLevel = Buffer.from([0x0, 0x0]);
-    // const data = Buffer.concat([
-    //     length,
-    //     screenname,
-    //     warningLevel,
-    //     tlv.asBlock(),
-    // ]);
-
+    // todo: cleanup copypasta
     const data = Buffer.from([
         0xd, // screenname ascii length
         0x78,

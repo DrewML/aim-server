@@ -21,17 +21,28 @@ export function buildFlap({ type, sequence, data }: BuildFlapOpts) {
 
 /**
  * @see https://en.wikipedia.org/wiki/OSCAR_protocol#FLAP_header
+ * @todo Probably be nice to make this lazy via a generator function
  */
-export function parseFlap(rawFlap: Buffer): Flap {
-    const id = rawFlap.readUInt8(0);
-    assert(id === 0x2a, 'Unexpected Flap ID');
+export function parseFlaps(buf: Buffer): Flap[] {
+    const flaps: Flap[] = [];
+    let offset = 0;
 
-    const type = rawFlap.readUInt8(1);
-    const sequence = rawFlap.readUInt16BE(2);
-    const byteLength = rawFlap.readUInt16BE(4);
-    const remainingData = rawFlap.subarray(6);
+    while (offset < buf.byteLength - 1) {
+        const startByte = buf.readUInt8(offset);
+        offset++;
+        assert(startByte === 0x2a, 'Unexpected FLAP start byte');
 
-    assert(remainingData.byteLength === byteLength, 'Malformed FLAP');
+        const type = buf.readUInt8(offset);
+        offset++;
+        const sequence = buf.readUInt16BE(offset);
+        offset += 2;
+        const byteLength = buf.readUInt16BE(offset);
+        offset += 2;
+        const data = buf.subarray(offset, offset + byteLength);
+        offset += byteLength;
 
-    return { type, sequence, byteLength, data: remainingData };
+        flaps.push({ type, sequence, byteLength, data });
+    }
+
+    return flaps;
 }

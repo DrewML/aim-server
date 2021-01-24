@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { Flap, FlapType } from './types';
-import { parseFlap, buildFlap } from './flapUtils';
+import { buildFlap, parseFlaps } from './flapUtils';
 import { createServer, Socket, Server, AddressInfo } from 'net';
 import { MultiMap } from './MultiMap';
 
@@ -92,15 +92,15 @@ export class OscarSocket {
     }
 
     private onData(data: Buffer) {
-        const flap = parseFlap(data);
-        assert(
-            this.flapListeners.has(flap.type),
-            `No handler for Flap type ${flap.type}`,
-        );
-
-        const listeners = this.flapListeners.get(flap.type);
-        for (const listener of listeners) {
-            listener(flap);
+        for (const flap of parseFlaps(data)) {
+            assert(
+                this.flapListeners.has(flap.type),
+                `No handler for Flap type ${flap.type}`,
+            );
+            const listeners = this.flapListeners.get(flap.type);
+            for (const listener of listeners) {
+                listener(flap);
+            }
         }
     }
 }

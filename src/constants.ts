@@ -50,7 +50,9 @@ export const SNACS = {
     },
     USAGE_STATS: {
         family: 0x0b,
-        subtypes: {},
+        subtypes: {
+            CLIENT_STATS_REPORT: 0x3,
+        },
     },
     SSI: {
         family: 0x13,

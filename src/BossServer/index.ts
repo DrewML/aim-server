@@ -75,6 +75,16 @@ export class BossServer extends OscarServer {
                 });
             }
 
+            if (matchSnac(snac, 'USAGE_STATS', 'CLIENT_STATS_REPORT')) {
+                // client stats report, can ignore
+                return;
+            }
+
+            if (matchSnac(snac, 'GENERAL', 'CLIENT_READY')) {
+                // TODO: mark client as online
+                return;
+            }
+
             console.log('BOSS: unhandled snac:');
             console.log(prettyPrintSnac(snac));
         });

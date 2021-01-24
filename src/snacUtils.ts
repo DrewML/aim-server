@@ -4,6 +4,7 @@ import { prettyPrint } from './buf';
 
 const BOLD_TEXT = '\x1b[1m';
 const RESET_TEXT = '\x1b[0m';
+const MAGENTA_TEXT = '\x1b[35m';
 
 /**
  * @summary Determines whether a Snac is a specific
@@ -69,10 +70,12 @@ export function prettyPrintSnac(snac: Snac) {
     const docsParam = `${hexFamily}_${hexSubtype}`;
     const docsURL = `http://iserverd.khstu.ru/oscar/snac_${docsParam}.html`;
 
-    return `${BOLD_TEXT}Family:${RESET_TEXT} 0x${hexFamily}
-${BOLD_TEXT}Subtype:${RESET_TEXT} 0x${hexSubtype}
-${BOLD_TEXT}Flag Mask:${RESET_TEXT} 0b${snac.flags.toString(2)}
-${BOLD_TEXT}Request ID:${RESET_TEXT} ${snac.requestID}
-${BOLD_TEXT}Possible Docs:${RESET_TEXT} ${docsURL}
-${BOLD_TEXT}Payload:${RESET_TEXT}\n${printedData}\n`;
+    return `${MAGENTA_TEXT}Family:${RESET_TEXT} 0x${hexFamily}
+${MAGENTA_TEXT}Subtype:${RESET_TEXT} 0x${hexSubtype}
+${MAGENTA_TEXT}Flag Mask:${RESET_TEXT} 0b${snac.flags.toString(2)}
+${MAGENTA_TEXT}Request ID:${RESET_TEXT} ${snac.requestID}
+${MAGENTA_TEXT}Possible Docs:${RESET_TEXT} ${docsURL}
+${MAGENTA_TEXT}Payload: ${RESET_TEXT}${
+        snac.data.byteLength ? `\n${printedData}\n` : 'N/A\n'
+    }`;
 }
